@@ -5,8 +5,32 @@
  */
 package Quitation;
 
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.Statement;
+import java.awt.Font;
+import java.awt.HeadlessException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -15,10 +39,64 @@ import javax.swing.JOptionPane;
 public class Employee extends javax.swing.JFrame {
 
     /**
-     * Creates new form Employee
+     * Creates new form Employee Civil Work Iron Work Wooden Work Steel Work
+     * Sanetary Work Plambing Work Electrical Work Landscap Others
      */
+    
+    private float Quantity;
+    private float price;
+    private float tatalprice;
+    
+    private int srow;
+
     public Employee() {
         initComponents();
+        ShowDataInproducttable();
+        //ShowDataInQuotationProducttable();
+    }
+
+   
+    // AllProduct list
+    public ArrayList<QuotationAllProductTable> ProductList() {
+        ArrayList<QuotationAllProductTable> ProductList = new ArrayList<>();
+        Connection con = DBConnection.getConnection();
+        String query = "SELECT * FROM `product` WHERE `Catagory` = " + "\"" + (String) ProductCatagoryOption.getSelectedItem() + "\"";
+
+        Statement st;
+        ResultSet rs;
+        try {
+            st = (Statement) con.createStatement();
+            rs = st.executeQuery(query);
+            QuotationAllProductTable productdata;
+            while (rs.next()) {
+                productdata = new QuotationAllProductTable(rs.getInt("id"),
+                        rs.getString("Discription"),
+                        rs.getString("Catagory"),
+                        rs.getString("unit"),
+                        rs.getFloat("price"));
+                ProductList.add(productdata);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ProductList;
+    }
+
+    //Show product in table of selected catagory
+    private void ShowDataInproducttable() {
+        ArrayList<QuotationAllProductTable> list = ProductList();
+        DefaultTableModel model = (DefaultTableModel) QuotationProductTable.getModel();
+        Object[] row = new Object[5];
+        for (int i = 0; i < list.size(); i++) {
+
+            row[0] = list.get(i).getId();
+            row[1] = list.get(i).getDiscription();
+            row[2] = list.get(i).getCatagory();
+            row[3] = list.get(i).getUnit();
+            row[4] = list.get(i).getPrice();
+
+            model.addRow(row);
+        }
     }
 
     /**
@@ -39,53 +117,18 @@ public class Employee extends javax.swing.JFrame {
         EmployeeHeading1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel6 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        ViewFile = new javax.swing.JTextArea();
-        beowseFile = new javax.swing.JButton();
-        PrintFile = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
-        QuotationSearchPanel1 = new javax.swing.JPanel();
-        ProductCatagoryOption = new javax.swing.JComboBox<>();
-        CatagoryLabale = new javax.swing.JLabel();
-        ProductSearchText = new javax.swing.JTextField();
-        Search = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        QuotationProductTable = new javax.swing.JTable();
-        SendCompanyInfo1 = new javax.swing.JPanel();
-        ProductDescriptionLabel = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        QuotationProductDiscription = new javax.swing.JTextArea();
-        ProductDescriptionLabel1 = new javax.swing.JLabel();
-        ProductQuantityText = new javax.swing.JTextField();
-        Add = new javax.swing.JButton();
-        Delete = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        QuotationTable = new javax.swing.JTable();
-        Save = new javax.swing.JButton();
-        CatagoryLabale1 = new javax.swing.JLabel();
-        QuotationCatagory = new javax.swing.JComboBox<>();
-        ProductDescriptionLabel2 = new javax.swing.JLabel();
-        QuotationNo = new javax.swing.JTextField();
-        ProductDescriptionLabel4 = new javax.swing.JLabel();
-        ReciverCompanyNameText = new javax.swing.JTextField();
-        ProductDescriptionLabel3 = new javax.swing.JLabel();
-        RecivedrCompanyAddressText = new javax.swing.JTextField();
         jPanel4 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane6 = new javax.swing.JScrollPane();
         Billaplicationtext = new javax.swing.JTextArea();
         jPanel8 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        totalAmount = new javax.swing.JLabel();
         Billno = new javax.swing.JLabel();
         companyaddress = new javax.swing.JLabel();
         companyname = new javax.swing.JLabel();
         WorkingBill = new javax.swing.JLabel();
         Advancepay = new javax.swing.JLabel();
-        payableAmountOutput = new javax.swing.JLabel();
         AcountDetail = new javax.swing.JLabel();
         BillNoText = new javax.swing.JTextField();
         AcountDetaileText = new javax.swing.JTextField();
@@ -95,6 +138,24 @@ public class Employee extends javax.swing.JFrame {
         AdvancePayText = new javax.swing.JTextField();
         BillSave = new javax.swing.JButton();
         payableAmount1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        QuotationSearchPanel1 = new javax.swing.JPanel();
+        ProductCatagoryOption = new javax.swing.JComboBox<>();
+        CatagoryLabale = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        QuotationProductTable = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        QuotationTable = new javax.swing.JTable();
+        Save = new javax.swing.JButton();
+        ProductDescriptionLabel2 = new javax.swing.JLabel();
+        QuotationNo = new javax.swing.JTextField();
+        ProductDescriptionLabel4 = new javax.swing.JLabel();
+        ReciverCompanyNameText = new javax.swing.JTextField();
+        ProductDescriptionLabel3 = new javax.swing.JLabel();
+        RecivedrCompanyAddressText = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
@@ -199,405 +260,6 @@ public class Employee extends javax.swing.JFrame {
         jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.LEFT);
         jTabbedPane1.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
 
-        jPanel2.setBackground(new java.awt.Color(24, 33, 43));
-        jPanel2.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
-
-        jPanel6.setBackground(new java.awt.Color(234, 236, 238));
-        jPanel6.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-
-        ViewFile.setBackground(new java.awt.Color(234, 236, 238));
-        ViewFile.setLineWrap(true);
-        ViewFile.setRows(5);
-        ViewFile.setTabSize(4);
-        ViewFile.setWrapStyleWord(true);
-        ViewFile.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        jScrollPane1.setViewportView(ViewFile);
-
-        beowseFile.setBackground(new java.awt.Color(234, 236, 238));
-        beowseFile.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        beowseFile.setText("Browse File");
-        beowseFile.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-
-        PrintFile.setBackground(new java.awt.Color(234, 236, 238));
-        PrintFile.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        PrintFile.setText("Print");
-        PrintFile.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(beowseFile, javax.swing.GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
-                    .addComponent(PrintFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 767, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel6Layout.createSequentialGroup()
-                .addGap(147, 147, 147)
-                .addComponent(beowseFile, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(56, 56, 56)
-                .addComponent(PrintFile, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(226, Short.MAX_VALUE))
-            .addComponent(jScrollPane1)
-        );
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        jTabbedPane1.addTab("View", jPanel2);
-
-        jPanel3.setBackground(new java.awt.Color(24, 33, 43));
-        jPanel3.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
-        jPanel3.setLayout(null);
-
-        QuotationSearchPanel1.setBackground(new java.awt.Color(234, 236, 238));
-        QuotationSearchPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
-
-        ProductCatagoryOption.setBackground(new java.awt.Color(234, 236, 238));
-        ProductCatagoryOption.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProductCatagoryOption.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Civil Work", "Iron Work", "Wooden Work", "Steel Work", "Sanetary Work", "Plambing Work", "Electrical Work", "Landscap", "Others" }));
-        ProductCatagoryOption.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        ProductCatagoryOption.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        ProductCatagoryOption.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ProductCatagoryOptionActionPerformed(evt);
-            }
-        });
-
-        CatagoryLabale.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        CatagoryLabale.setText("Select Catagory");
-
-        ProductSearchText.setBackground(new java.awt.Color(234, 236, 238));
-        ProductSearchText.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
-        ProductSearchText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        ProductSearchText.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        ProductSearchText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ProductSearchTextActionPerformed(evt);
-            }
-        });
-
-        Search.setBackground(new java.awt.Color(234, 236, 238));
-        Search.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        Search.setText("Search");
-        Search.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        Search.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        Search.setFocusPainted(false);
-        Search.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                SearchActionPerformed(evt);
-            }
-        });
-
-        QuotationProductTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Sl.no", "Discription", "unit", "prise"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Object.class, java.lang.Float.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        jScrollPane3.setViewportView(QuotationProductTable);
-
-        javax.swing.GroupLayout QuotationSearchPanel1Layout = new javax.swing.GroupLayout(QuotationSearchPanel1);
-        QuotationSearchPanel1.setLayout(QuotationSearchPanel1Layout);
-        QuotationSearchPanel1Layout.setHorizontalGroup(
-            QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(QuotationSearchPanel1Layout.createSequentialGroup()
-                .addGroup(QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(QuotationSearchPanel1Layout.createSequentialGroup()
-                        .addGap(30, 30, 30)
-                        .addComponent(CatagoryLabale, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(20, 20, 20)
-                        .addComponent(ProductCatagoryOption, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(QuotationSearchPanel1Layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(ProductSearchText, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(Search, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-        );
-        QuotationSearchPanel1Layout.setVerticalGroup(
-            QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(QuotationSearchPanel1Layout.createSequentialGroup()
-                .addGap(9, 9, 9)
-                .addGroup(QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CatagoryLabale, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ProductCatagoryOption, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(10, 10, 10)
-                .addGroup(QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ProductSearchText, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Search, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
-        );
-
-        jPanel3.add(QuotationSearchPanel1);
-        QuotationSearchPanel1.setBounds(10, 10, 430, 290);
-
-        SendCompanyInfo1.setBackground(new java.awt.Color(234, 236, 238));
-        SendCompanyInfo1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
-        SendCompanyInfo1.setLayout(null);
-
-        ProductDescriptionLabel.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProductDescriptionLabel.setText("Product Quantity");
-        SendCompanyInfo1.add(ProductDescriptionLabel);
-        ProductDescriptionLabel.setBounds(10, 120, 170, 30);
-
-        QuotationProductDiscription.setBackground(new java.awt.Color(234, 236, 238));
-        QuotationProductDiscription.setColumns(20);
-        QuotationProductDiscription.setFont(new java.awt.Font("Comic Sans MS", 2, 16)); // NOI18N
-        QuotationProductDiscription.setLineWrap(true);
-        QuotationProductDiscription.setRows(5);
-        QuotationProductDiscription.setAutoscrolls(false);
-        QuotationProductDiscription.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jScrollPane2.setViewportView(QuotationProductDiscription);
-
-        SendCompanyInfo1.add(jScrollPane2);
-        jScrollPane2.setBounds(190, 10, 230, 90);
-
-        ProductDescriptionLabel1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProductDescriptionLabel1.setText("Product discription");
-        SendCompanyInfo1.add(ProductDescriptionLabel1);
-        ProductDescriptionLabel1.setBounds(10, 40, 170, 40);
-
-        ProductQuantityText.setBackground(new java.awt.Color(234, 236, 238));
-        ProductQuantityText.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
-        ProductQuantityText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        ProductQuantityText.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        ProductQuantityText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ProductQuantityTextActionPerformed(evt);
-            }
-        });
-        SendCompanyInfo1.add(ProductQuantityText);
-        ProductQuantityText.setBounds(190, 120, 170, 30);
-
-        Add.setBackground(new java.awt.Color(234, 236, 238));
-        Add.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        Add.setText("Add");
-        Add.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        Add.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        Add.setFocusPainted(false);
-        Add.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AddActionPerformed(evt);
-            }
-        });
-        SendCompanyInfo1.add(Add);
-        Add.setBounds(230, 180, 100, 30);
-
-        Delete.setBackground(new java.awt.Color(234, 236, 238));
-        Delete.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        Delete.setText("Delete");
-        Delete.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        Delete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        Delete.setFocusPainted(false);
-        Delete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DeleteActionPerformed(evt);
-            }
-        });
-        SendCompanyInfo1.add(Delete);
-        Delete.setBounds(100, 180, 110, 30);
-
-        jPanel3.add(SendCompanyInfo1);
-        SendCompanyInfo1.setBounds(10, 310, 430, 240);
-
-        jPanel5.setBackground(new java.awt.Color(234, 236, 238));
-        jPanel5.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
-
-        QuotationTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Sl.no", "Discription", "Unit", "Quantity", "Unit Price", "Total"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Integer.class, java.lang.Float.class, java.lang.Double.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        jScrollPane4.setViewportView(QuotationTable);
-
-        Save.setBackground(new java.awt.Color(234, 236, 238));
-        Save.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        Save.setText("Save");
-        Save.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        Save.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        Save.setFocusPainted(false);
-        Save.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                SaveActionPerformed(evt);
-            }
-        });
-
-        CatagoryLabale1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        CatagoryLabale1.setText("Select Catagory");
-
-        QuotationCatagory.setBackground(new java.awt.Color(234, 236, 238));
-        QuotationCatagory.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        QuotationCatagory.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        QuotationCatagory.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        QuotationCatagory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                QuotationCatagoryActionPerformed(evt);
-            }
-        });
-
-        ProductDescriptionLabel2.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProductDescriptionLabel2.setText("Quotation No");
-
-        QuotationNo.setBackground(new java.awt.Color(234, 236, 238));
-        QuotationNo.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
-        QuotationNo.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        QuotationNo.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        QuotationNo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                QuotationNoActionPerformed(evt);
-            }
-        });
-
-        ProductDescriptionLabel4.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProductDescriptionLabel4.setText("Company name");
-
-        ReciverCompanyNameText.setBackground(new java.awt.Color(234, 236, 238));
-        ReciverCompanyNameText.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
-        ReciverCompanyNameText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        ReciverCompanyNameText.setText("Enter Reciver Company name");
-        ReciverCompanyNameText.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        ReciverCompanyNameText.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                ReciverCompanyNameTextMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                ReciverCompanyNameTextMouseEntered(evt);
-            }
-        });
-        ReciverCompanyNameText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ReciverCompanyNameTextActionPerformed(evt);
-            }
-        });
-
-        ProductDescriptionLabel3.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProductDescriptionLabel3.setText("Address");
-
-        RecivedrCompanyAddressText.setBackground(new java.awt.Color(234, 236, 238));
-        RecivedrCompanyAddressText.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
-        RecivedrCompanyAddressText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        RecivedrCompanyAddressText.setText("Reciver company Address ");
-        RecivedrCompanyAddressText.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
-        RecivedrCompanyAddressText.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                RecivedrCompanyAddressTextMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                RecivedrCompanyAddressTextMouseEntered(evt);
-            }
-        });
-        RecivedrCompanyAddressText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                RecivedrCompanyAddressTextActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(199, 199, 199)
-                        .addComponent(Save, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGap(9, 9, 9)
-                                .addComponent(ProductDescriptionLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGap(43, 43, 43)
-                                .addComponent(CatagoryLabale1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(17, 17, 17)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(QuotationCatagory, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(RecivedrCompanyAddressText, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addGap(9, 9, 9)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ProductDescriptionLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ProductDescriptionLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(QuotationNo, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ReciverCompanyNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jScrollPane4)
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(9, 9, 9)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ProductDescriptionLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(QuotationNo, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ProductDescriptionLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(ReciverCompanyNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(20, 20, 20)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ProductDescriptionLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(RecivedrCompanyAddressText, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(CatagoryLabale1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(QuotationCatagory, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(28, 28, 28)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(Save, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        jPanel3.add(jPanel5);
-        jPanel5.setBounds(450, 10, 500, 540);
-
-        jTabbedPane1.addTab("Quotation", jPanel3);
-
         jPanel4.setBackground(new java.awt.Color(24, 33, 43));
         jPanel4.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
 
@@ -643,13 +305,20 @@ public class Employee extends javax.swing.JFrame {
         jPanel8.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
         jPanel8.setLayout(null);
 
-        jLabel2.setBackground(new java.awt.Color(24, 33, 43));
-        jLabel2.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Bill information");
-        jLabel2.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 2, true));
-        jPanel8.add(jLabel2);
-        jLabel2.setBounds(11, 12, 424, 38);
+        totalAmount.setBackground(new java.awt.Color(24, 33, 43));
+        totalAmount.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
+        totalAmount.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        totalAmount.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 2, true));
+        totalAmount.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                totalAmountMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                totalAmountMouseEntered(evt);
+            }
+        });
+        jPanel8.add(totalAmount);
+        totalAmount.setBounds(200, 350, 230, 38);
 
         Billno.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
         Billno.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -680,12 +349,6 @@ public class Employee extends javax.swing.JFrame {
         Advancepay.setText("Avanced pay");
         jPanel8.add(Advancepay);
         Advancepay.setBounds(10, 290, 190, 38);
-
-        payableAmountOutput.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
-        payableAmountOutput.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        payableAmountOutput.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 2, true));
-        jPanel8.add(payableAmountOutput);
-        payableAmountOutput.setBounds(200, 350, 230, 38);
 
         AcountDetail.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
         AcountDetail.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -757,6 +420,14 @@ public class Employee extends javax.swing.JFrame {
         AdvancePayText.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
         AdvancePayText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         AdvancePayText.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
+        AdvancePayText.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                AdvancePayTextMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                AdvancePayTextMouseExited(evt);
+            }
+        });
         AdvancePayText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 AdvancePayTextActionPerformed(evt);
@@ -785,6 +456,14 @@ public class Employee extends javax.swing.JFrame {
         jPanel8.add(payableAmount1);
         payableAmount1.setBounds(10, 350, 190, 38);
 
+        jLabel3.setBackground(new java.awt.Color(24, 33, 43));
+        jLabel3.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("Bill information");
+        jLabel3.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 2, true));
+        jPanel8.add(jLabel3);
+        jLabel3.setBounds(11, 12, 424, 38);
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -807,6 +486,220 @@ public class Employee extends javax.swing.JFrame {
         );
 
         jTabbedPane1.addTab("Bill", jPanel4);
+
+        jPanel3.setBackground(new java.awt.Color(24, 33, 43));
+        jPanel3.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
+        jPanel3.setLayout(null);
+
+        QuotationSearchPanel1.setBackground(new java.awt.Color(234, 236, 238));
+        QuotationSearchPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
+
+        ProductCatagoryOption.setBackground(new java.awt.Color(234, 236, 238));
+        ProductCatagoryOption.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        ProductCatagoryOption.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "none", "Civil Work", "Iron Work", "Wooden Work", "Steel Work", "Sanetary Work", "Plambing Work", "Electrical Work", "Landscap", "Others" }));
+        ProductCatagoryOption.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
+        ProductCatagoryOption.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        ProductCatagoryOption.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ProductCatagoryOptionMouseClicked(evt);
+            }
+        });
+        ProductCatagoryOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ProductCatagoryOptionActionPerformed(evt);
+            }
+        });
+
+        CatagoryLabale.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        CatagoryLabale.setText("Select Catagory");
+
+        QuotationProductTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Sl.no", "Discription", "Catagory", "unit", "prise"
+            }
+        ));
+        QuotationProductTable.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        QuotationProductTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                QuotationProductTableMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(QuotationProductTable);
+
+        jButton1.setText("Add");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout QuotationSearchPanel1Layout = new javax.swing.GroupLayout(QuotationSearchPanel1);
+        QuotationSearchPanel1.setLayout(QuotationSearchPanel1Layout);
+        QuotationSearchPanel1Layout.setHorizontalGroup(
+            QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, QuotationSearchPanel1Layout.createSequentialGroup()
+                .addContainerGap(258, Short.MAX_VALUE)
+                .addComponent(CatagoryLabale, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(ProductCatagoryOption, javax.swing.GroupLayout.PREFERRED_SIZE, 249, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(243, 243, 243))
+            .addGroup(QuotationSearchPanel1Layout.createSequentialGroup()
+                .addGap(383, 383, 383)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        QuotationSearchPanel1Layout.setVerticalGroup(
+            QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(QuotationSearchPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(QuotationSearchPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CatagoryLabale, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ProductCatagoryOption, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jPanel3.add(QuotationSearchPanel1);
+        QuotationSearchPanel1.setBounds(10, 10, 930, 270);
+
+        jPanel5.setBackground(new java.awt.Color(234, 236, 238));
+        jPanel5.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
+
+        QuotationTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Sl.no", "Discription", "Catagory", "Unit", "Quantity", "Unit Price", "total"
+            }
+        ));
+        QuotationTable.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jScrollPane4.setViewportView(QuotationTable);
+
+        Save.setBackground(new java.awt.Color(234, 236, 238));
+        Save.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        Save.setText("Save");
+        Save.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        Save.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Save.setFocusPainted(false);
+        Save.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SaveActionPerformed(evt);
+            }
+        });
+
+        ProductDescriptionLabel2.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        ProductDescriptionLabel2.setText("Quotation No");
+
+        QuotationNo.setBackground(new java.awt.Color(234, 236, 238));
+        QuotationNo.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
+        QuotationNo.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        QuotationNo.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
+        QuotationNo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                QuotationNoActionPerformed(evt);
+            }
+        });
+
+        ProductDescriptionLabel4.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        ProductDescriptionLabel4.setText("Company name");
+
+        ReciverCompanyNameText.setBackground(new java.awt.Color(234, 236, 238));
+        ReciverCompanyNameText.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
+        ReciverCompanyNameText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        ReciverCompanyNameText.setText("Enter Reciver Company name");
+        ReciverCompanyNameText.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
+        ReciverCompanyNameText.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                ReciverCompanyNameTextMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                ReciverCompanyNameTextMouseEntered(evt);
+            }
+        });
+        ReciverCompanyNameText.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ReciverCompanyNameTextActionPerformed(evt);
+            }
+        });
+
+        ProductDescriptionLabel3.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        ProductDescriptionLabel3.setText("Address");
+
+        RecivedrCompanyAddressText.setBackground(new java.awt.Color(234, 236, 238));
+        RecivedrCompanyAddressText.setFont(new java.awt.Font("Comic Sans MS", 2, 14)); // NOI18N
+        RecivedrCompanyAddressText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        RecivedrCompanyAddressText.setText("Reciver company Address ");
+        RecivedrCompanyAddressText.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
+        RecivedrCompanyAddressText.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                RecivedrCompanyAddressTextMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                RecivedrCompanyAddressTextMouseEntered(evt);
+            }
+        });
+        RecivedrCompanyAddressText.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RecivedrCompanyAddressTextActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addGap(0, 2, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 926, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ProductDescriptionLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(QuotationNo, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(30, 30, 30)
+                .addComponent(ProductDescriptionLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(Save, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(ReciverCompanyNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(ProductDescriptionLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(RecivedrCompanyAddressText)))
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ProductDescriptionLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(QuotationNo, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ProductDescriptionLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ReciverCompanyNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ProductDescriptionLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RecivedrCompanyAddressText, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(Save, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel3.add(jPanel5);
+        jPanel5.setBounds(10, 290, 930, 260);
+
+        jTabbedPane1.addTab("Quotation", jPanel3);
 
         jPanel1.add(jTabbedPane1);
         jTabbedPane1.setBounds(0, 0, 1060, 570);
@@ -831,11 +724,11 @@ public class Employee extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void ExitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseClicked
-        if(JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to exit?")==0){
+        if (JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to exit?") == 0) {
             System.exit(0);
         }
-        
-        
+
+
     }//GEN-LAST:event_ExitMouseClicked
 
     private void ExitMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseEntered
@@ -857,125 +750,26 @@ public class Employee extends javax.swing.JFrame {
     private void minMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseExited
         min.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_minMouseExited
-
-    private void ProductCatagoryOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProductCatagoryOptionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ProductCatagoryOptionActionPerformed
-
-    private void ProductSearchTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProductSearchTextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ProductSearchTextActionPerformed
-
-    private void SearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SearchActionPerformed
-        ProductSearchText.setText(null);
-    }//GEN-LAST:event_SearchActionPerformed
-
-    private void ProductQuantityTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProductQuantityTextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ProductQuantityTextActionPerformed
-    private void setProductNull() {
-        QuotationProductDiscription.setText(null);
-        ProductQuantityText.setText(null);
-    }
-    private boolean VarifyAddProbuctData(){
-        if(QuotationProductDiscription.getText().equals("")){
-            JOptionPane.showMessageDialog(null, "Select Product from avobe product list");
-            return false;
-        }
-        else if(ProductQuantityText.getText().equals("")){
-            JOptionPane.showMessageDialog(null, "Add product quantity");
-            return false;
-        }
-        return true;
-    }
-    private void AddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddActionPerformed
-        if(VarifyAddProbuctData()){
-            JOptionPane.showMessageDialog(null, "Product added to quotation");
-            setProductNull();
-        }
-        
-    }//GEN-LAST:event_AddActionPerformed
-    private boolean VarifydeleteProbuctData(){
-        if(QuotationProductDiscription.getText().equals("")){
-            JOptionPane.showMessageDialog(null, "Select Product from Quotation");
-            return false;
-        }
-       
-        return true;
-    }
-    private void DeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeleteActionPerformed
-        if(VarifydeleteProbuctData()){
-            if(JOptionPane.showConfirmDialog(null, "Want to delete product from quotation?")==0){
-                 setProductNull();
-                 JOptionPane.showMessageDialog(null, "Product deleted");
-            }
-            
-           
-        }
-    }//GEN-LAST:event_DeleteActionPerformed
-    private boolean VarifyQuotation(){
-        if(QuotationNo.getText().equals("")){
+    private boolean VarifyQuotation() {
+        if (QuotationNo.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty Quotation number");
             return false;
-        }
-            
-        else if(ReciverCompanyNameText.getText().equals("Enter Reciver Company name")
-                ||ReciverCompanyNameText.getText().equals("")){
+        } else if (ReciverCompanyNameText.getText().equals("Enter Reciver Company name")
+                || ReciverCompanyNameText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty Company name");
             return false;
-        }
-            
-        else if(RecivedrCompanyAddressText.getText().equals("Reciver company Address ")
-                ||RecivedrCompanyAddressText.getText().equals("")){
+        } else if (RecivedrCompanyAddressText.getText().equals("Reciver company Address ")
+                || RecivedrCompanyAddressText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty company address");
             return false;
-        }
-            
-        else 
+        } else {
             return true;
-        
-    }
-    private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
-        
-        if(VarifyQuotation()){
-            JOptionPane.showMessageDialog(null, "Quotation successfully created");
         }
-    }//GEN-LAST:event_SaveActionPerformed
 
-    private void QuotationCatagoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QuotationCatagoryActionPerformed
-        
-    }//GEN-LAST:event_QuotationCatagoryActionPerformed
-
-    private void RecivedrCompanyAddressTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RecivedrCompanyAddressTextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_RecivedrCompanyAddressTextActionPerformed
-
-    private void QuotationNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QuotationNoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_QuotationNoActionPerformed
-
-    private void ReciverCompanyNameTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReciverCompanyNameTextActionPerformed
-        
-    }//GEN-LAST:event_ReciverCompanyNameTextActionPerformed
-
-    private void RecivedrCompanyAddressTextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RecivedrCompanyAddressTextMouseEntered
-        
-    }//GEN-LAST:event_RecivedrCompanyAddressTextMouseEntered
-
-    private void ReciverCompanyNameTextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ReciverCompanyNameTextMouseEntered
-        
-    }//GEN-LAST:event_ReciverCompanyNameTextMouseEntered
-
-    private void ReciverCompanyNameTextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ReciverCompanyNameTextMouseClicked
-        ReciverCompanyNameText.setText(null);
-    }//GEN-LAST:event_ReciverCompanyNameTextMouseClicked
-
-    private void RecivedrCompanyAddressTextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RecivedrCompanyAddressTextMouseClicked
-        RecivedrCompanyAddressText.setText(null);
-    }//GEN-LAST:event_RecivedrCompanyAddressTextMouseClicked
+    }
 
     private void EmployeeLogoutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_EmployeeLogoutMouseClicked
-        if(JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to Logout?")==0){
+        if (JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to Logout?") == 0) {
             Login lin = new Login();
             lin.setVisible(true);
             this.dispose();
@@ -990,67 +784,609 @@ public class Employee extends javax.swing.JFrame {
         EmployeeLogout.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_EmployeeLogoutMouseExited
 
-    private void BillNoTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BillNoTextActionPerformed
+    private void RecivedrCompanyAddressTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RecivedrCompanyAddressTextActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_BillNoTextActionPerformed
+    }//GEN-LAST:event_RecivedrCompanyAddressTextActionPerformed
 
-    private void AcountDetaileTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AcountDetaileTextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_AcountDetaileTextActionPerformed
+    private void RecivedrCompanyAddressTextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RecivedrCompanyAddressTextMouseEntered
 
-    private void CompanyNameTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompanyNameTextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_CompanyNameTextActionPerformed
+    }//GEN-LAST:event_RecivedrCompanyAddressTextMouseEntered
 
-    private void CompanyAddressTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompanyAddressTextActionPerformed
+    private void RecivedrCompanyAddressTextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RecivedrCompanyAddressTextMouseClicked
+        RecivedrCompanyAddressText.setText(null);
+    }//GEN-LAST:event_RecivedrCompanyAddressTextMouseClicked
+
+    private void ReciverCompanyNameTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReciverCompanyNameTextActionPerformed
+
+    }//GEN-LAST:event_ReciverCompanyNameTextActionPerformed
+
+    private void ReciverCompanyNameTextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ReciverCompanyNameTextMouseEntered
+
+    }//GEN-LAST:event_ReciverCompanyNameTextMouseEntered
+
+    private void ReciverCompanyNameTextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ReciverCompanyNameTextMouseClicked
+        ReciverCompanyNameText.setText(null);
+    }//GEN-LAST:event_ReciverCompanyNameTextMouseClicked
+
+    private void QuotationNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QuotationNoActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_CompanyAddressTextActionPerformed
+    }//GEN-LAST:event_QuotationNoActionPerformed
+
+    /*private void comLogo() {
+    Connection con = DBConnection.getConnection();
+    String quary = "SELECT * FROM `admin` WHERE `id`=1";
+    
+    try {
+    Statement st = (Statement) con.createStatement();
+    ResultSet rs = st.executeQuery(quary);
+    if (rs.next()) {//now on 1st row
+    
+    byte[] img = rs.getBytes("Logo");
+    Image imag=
+    } else {
+    JOptionPane.showMessageDialog(null, "No Data");
+    }
+    } catch (SQLException ex) {
+    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
+    }*/
+    private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
+        String Qno;
+        String recivedComName;
+        String RecivedComAdd;
+        String MyAdd = null;
+        String MyCompany = null;
+        float total = 0;
+
+        Connection con = DBConnection.getConnection();
+        String quary = "SELECT * FROM `admin` WHERE `id`=1";
+
+        if (VarifyQuotation()) {
+
+            Qno = QuotationNo.getText();
+            recivedComName = (String) ReciverCompanyNameText.getText();
+            RecivedComAdd = (String) RecivedrCompanyAddressText.getText();
+            
+            Image image;
+
+            Document document = new Document();
+            try {
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(Qno + ".pdf"));
+                document.open();
+                Statement st = (Statement) con.createStatement();
+                ResultSet rs = st.executeQuery(quary);
+                if (rs.next()) {//now on 1st row
+
+                    byte[] img = rs.getBytes("Logo");
+                    MyCompany = rs.getString("CompanyName");
+                    MyAdd = rs.getString("CompanyAddress");
+                    image = Image.getInstance(img);
+                    image.scaleAbsolute(150, 50);
+                    document.add(image);
+                }
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("\n"));
+                Paragraph pr1 = new Paragraph();
+                Paragraph pr2 = new Paragraph();
+                Paragraph pr3 = new Paragraph();
+                Paragraph pr4 = new Paragraph();
+                Paragraph pr5 = new Paragraph();
+                Paragraph pr6 = new Paragraph();
+                Paragraph pr7 = new Paragraph();
+
+                pr1.setFont(FontFactory.getFont(FontFactory.TIMES, 18, Font.BOLD));
+                pr1.add(recivedComName);
+                document.add(pr1);
+                pr2.setFont(FontFactory.getFont(FontFactory.TIMES, 14, Font.BOLD));
+                pr2.add(RecivedComAdd);
+                document.add(pr2); // heading last
+                
+                document.add(new Paragraph("\n"));
+                
+                PdfPTable table = new PdfPTable(6); // 3 columns.
+                table.setWidthPercentage(100); //Width 100%
+                table.setSpacingBefore(10f); //Space before table
+                //table.setSpacingAfter(10f); //Space after table
+
+                //Set Column widths
+                float[] columnWidths = {.5f, 2f, .5f, 1f, 1f, 1f};
+                table.setWidths(columnWidths);
+
+                PdfPCell cell1 = new PdfPCell(new Paragraph("sl\nno"));
+                cell1.setBorderColor(BaseColor.BLACK);
+                cell1.setPaddingLeft(10);
+                cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cell2 = new PdfPCell(new Paragraph("Description"));
+                cell2.setBorderColor(BaseColor.BLACK);
+                cell2.setPaddingLeft(10);
+                cell2.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cell3 = new PdfPCell(new Paragraph("Unit"));
+                cell3.setBorderColor(BaseColor.BLACK);
+                cell3.setPaddingLeft(10);
+                cell3.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cell4 = new PdfPCell(new Paragraph("Quantity"));
+                cell4.setBorderColor(BaseColor.BLACK);
+                cell4.setPaddingLeft(10);
+                cell4.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cell5 = new PdfPCell(new Paragraph("Unit\nprice"));
+                cell5.setBorderColor(BaseColor.BLACK);
+                cell5.setPaddingLeft(10);
+                cell5.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell5.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cell6 = new PdfPCell(new Paragraph("Total"));
+                cell6.setBorderColor(BaseColor.BLACK);
+                cell6.setPaddingLeft(10);
+                cell6.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell6.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                table.addCell(cell1);
+                table.addCell(cell2);
+                table.addCell(cell3);
+                table.addCell(cell4);
+                table.addCell(cell5);
+                table.addCell(cell6);
+
+                DefaultTableModel model2 = (DefaultTableModel) QuotationTable.getModel();
+                int n = QuotationTable.getRowCount();
+                //model1.getValueAt(indexs[i], 0)
+                for (int i = 0; i < n; i++) {
+                    String ans1 = String.valueOf(i+1);
+                    PdfPCell c1 = new PdfPCell(new Paragraph(ans1));
+                    c1.setBorderColor(BaseColor.BLACK);
+                    c1.setPaddingLeft(10);
+                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    c1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                    String ans2 = String.valueOf(model2.getValueAt(i, 1));
+                    PdfPCell c2 = new PdfPCell(new Paragraph(ans2));
+                    c2.setBorderColor(BaseColor.BLACK);
+                    c2.setPaddingLeft(10);
+                    c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    c2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                    String ans3 = String.valueOf(model2.getValueAt(i, 3));
+                    PdfPCell c3 = new PdfPCell(new Paragraph(ans3));
+                    c3.setBorderColor(BaseColor.BLACK);
+                    c3.setPaddingLeft(10);
+                    c3.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    c3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                    String ans4 = String.valueOf(model2.getValueAt(i, 4));
+                    PdfPCell c4 = new PdfPCell(new Paragraph(ans4));
+                    c4.setBorderColor(BaseColor.BLACK);
+                    c4.setPaddingLeft(10);
+                    c4.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    c4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                    String ans5 = String.valueOf(model2.getValueAt(i, 5));
+                    PdfPCell c5 = new PdfPCell(new Paragraph(ans4));
+                    c5.setBorderColor(BaseColor.BLACK);
+                    c5.setPaddingLeft(10);
+                    c5.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    c5.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                    String ans6 = String.valueOf(model2.getValueAt(i, 6));
+                    total+=Float.valueOf(ans6);
+                    PdfPCell c6 = new PdfPCell(new Paragraph(ans6));
+                    c6.setBorderColor(BaseColor.BLACK);
+                    c6.setPaddingLeft(10);
+                    c6.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    c6.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    table.addCell(c1);
+                    table.addCell(c2);
+                    table.addCell(c3);
+                    table.addCell(c4);
+                    table.addCell(c5);
+                    table.addCell(c6);
+                }
+                
+                document.add(table);
+                PdfPTable table1 = new PdfPTable(2); // 3 columns.
+                table1.setWidthPercentage(100); //Width 100%
+                
+                
+                //table.setSpacingBefore(10f); //Space before table
+                table1.setSpacingAfter(10f); //Space after table
+                PdfPCell nc = new PdfPCell(new Paragraph("Total"));
+                    nc.setBorderColor(BaseColor.BLACK);
+                    nc.setPaddingLeft(10);
+                    nc.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    nc.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell nc1 = new PdfPCell(new Paragraph(String.valueOf(total)));
+                    nc1.setBorderColor(BaseColor.BLACK);
+                    nc1.setPaddingLeft(10);
+                    nc1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    nc1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                table1.addCell(nc);
+                table1.addCell(nc1);
+                document.add(table1);
+                
+                
+                int rtotal = (int) total;
+                int gtotal = (10*rtotal)/100;
+                int vat = (int) ((7.5*gtotal)/100);
+                int exvat = rtotal+gtotal;
+                int invat = rtotal+gtotal+vat;
+                
+                PdfPTable table2 = new PdfPTable(2); // 3 columns.
+                table2.setWidthPercentage(100); //Width 100%
+                
+                
+                table2.setSpacingBefore(10f); //Space before table
+                table2.setSpacingAfter(10f); //Space after table
+                PdfPCell t2c1 = new PdfPCell(new Paragraph("Discription"));
+                    t2c1.setBorderColor(BaseColor.BLACK);
+                    t2c1.setPaddingLeft(10);
+                    t2c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    t2c1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell t2c2 = new PdfPCell(new Paragraph("total"));
+                    t2c2.setBorderColor(BaseColor.BLACK);
+                    t2c2.setPaddingLeft(10);
+                    t2c2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    t2c2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    
+                PdfPCell t2c1_1 = new PdfPCell(new Paragraph("Estimated Cost"));
+                    t2c1_1.setBorderColor(BaseColor.BLACK);
+                    t2c1_1.setPaddingLeft(10);
+                    t2c1_1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    t2c1_1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell t2c2_1 = new PdfPCell(new Paragraph(String.valueOf(total)));
+                    t2c2_1.setBorderColor(BaseColor.BLACK);
+                    t2c2_1.setPaddingLeft(10);
+                    t2c2_1.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    t2c2_1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    
+                PdfPCell t2c1_2 = new PdfPCell(new Paragraph("Designe and Supervision 10% of cost"));
+                    t2c1_2.setBorderColor(BaseColor.BLACK);
+                    t2c1_2.setPaddingLeft(10);
+                    t2c1_2.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    t2c1_2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell t2c2_2 = new PdfPCell(new Paragraph(String.valueOf(gtotal)));
+                    t2c2_2.setBorderColor(BaseColor.BLACK);
+                    t2c2_2.setPaddingLeft(10);
+                    t2c2_2.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    t2c2_2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    
+                    PdfPCell t2c1_3 = new PdfPCell(new Paragraph("7.5% vat"));
+                    t2c1_3.setBorderColor(BaseColor.BLACK);
+                    t2c1_3.setPaddingLeft(10);
+                    t2c1_3.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    t2c1_3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell t2c2_3 = new PdfPCell(new Paragraph(String.valueOf(vat)));
+                    t2c2_3.setBorderColor(BaseColor.BLACK);
+                    t2c2_3.setPaddingLeft(10);
+                    t2c2_3.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    t2c2_3.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    
+                    PdfPCell t2c1_4 = new PdfPCell(new Paragraph("Vat Excludion budget"));
+                    t2c1_4.setBorderColor(BaseColor.BLACK);
+                    t2c1_4.setPaddingLeft(10);
+                    t2c1_4.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    t2c1_4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell t2c2_4 = new PdfPCell(new Paragraph(String.valueOf(exvat)));
+                    t2c2_4.setBorderColor(BaseColor.BLACK);
+                    t2c2_4.setPaddingLeft(10);
+                    t2c2_4.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    t2c2_4.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    
+                    PdfPCell t2c1_5 = new PdfPCell(new Paragraph("Vat Including budget"));
+                    t2c1_5.setBorderColor(BaseColor.BLACK);
+                    t2c1_5.setPaddingLeft(10);
+                    t2c1_5.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    t2c1_5.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell t2c2_5 = new PdfPCell(new Paragraph(String.valueOf(invat)));
+                    t2c2_5.setBorderColor(BaseColor.BLACK);
+                    t2c2_5.setPaddingLeft(10);
+                    t2c2_5.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    t2c2_5.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                table2.addCell(t2c1);
+                table2.addCell(t2c2);
+                table2.addCell(t2c1_1);
+                table2.addCell(t2c2_1);
+                table2.addCell(t2c1_2);
+                table2.addCell(t2c2_2);
+                table2.addCell(t2c1_3);
+                table2.addCell(t2c2_3);
+                table2.addCell(t2c1_4);
+                table2.addCell(t2c2_4);
+                table2.addCell(t2c1_5);
+                table2.addCell(t2c2_5);
+                
+                document.add(table2);
+                
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("\n"));
+                pr3.setFont(FontFactory.getFont(FontFactory.TIMES, 12, Font.BOLD));
+                pr3.add("Note : All are approximate quantity price which should be change as per actual quantity.");
+                document.add(pr3);
+                document.add(new Paragraph("\n"));
+                pr4.setFont(FontFactory.getFont(FontFactory.TIMES, 12, Font.BOLD));
+                pr4.add("(after completed the total Project. This is the quotation excluding Air Conditioning and thin\n"
+                        + "quotition valid for only 21 dayes)");
+                document.add(pr4);
+                document.add(new Paragraph("\n"));
+
+                pr5.setFont(FontFactory.getFont(FontFactory.TIMES, 14, Font.BOLD));
+                pr5.add(MyCompany);
+                document.add(pr5);
+                pr6.setFont(FontFactory.getFont(FontFactory.TIMES, 14, Font.BOLD));
+                pr6.add(MyAdd);
+                document.add(pr6);
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("--------------"));
+
+                pr7.setFont(FontFactory.getFont(FontFactory.TIMES, 14, Font.BOLD));
+                pr7.add("Signature");
+                document.add(pr7);
+
+                document.close();
+                JOptionPane.showMessageDialog(null, "Quotation successfully created");
+            } catch (Exception ex) {
+                Logger.getLogger(Employee.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_SaveActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        TableModel model1 = QuotationProductTable.getModel();
+        int indexs[] = QuotationProductTable.getSelectedRows();
+
+        Object[] row = new Object[7];
+
+        DefaultTableModel model2 = (DefaultTableModel) QuotationTable.getModel();
+
+        for (int i = 0; i < indexs.length; i++) {
+            row[0] = model1.getValueAt(indexs[i], 0);
+            row[1] = model1.getValueAt(indexs[i], 1);
+            row[2] = model1.getValueAt(indexs[i], 2);
+            row[3] = model1.getValueAt(indexs[i], 3);
+
+            row[4] = Quantity;
+            row[5] = model1.getValueAt(indexs[i], 4);
+            row[6] = (float) model1.getValueAt(indexs[i], 4) * Quantity;
+            model2.addRow(row);
+
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void QuotationProductTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_QuotationProductTableMouseClicked
+        TableModel model1 = QuotationProductTable.getModel();
+        srow = QuotationProductTable.getSelectedRow();
+        Quantity = Float.parseFloat(JOptionPane.showInputDialog("Enter product quantity"));
+        tatalprice = (float) model1.getValueAt(srow, 4) * Quantity;
+
+    }//GEN-LAST:event_QuotationProductTableMouseClicked
+
+    private void ProductCatagoryOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProductCatagoryOptionActionPerformed
+        DefaultTableModel model = (DefaultTableModel) QuotationProductTable.getModel();
+        model.setRowCount(0);
+        ShowDataInproducttable();
+    }//GEN-LAST:event_ProductCatagoryOptionActionPerformed
+
+    private void ProductCatagoryOptionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ProductCatagoryOptionMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ProductCatagoryOptionMouseClicked
+
+    private void BillSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BillSaveActionPerformed
+        Connection con = DBConnection.getConnection();
+        String quary = "SELECT * FROM `admin` WHERE `id`=1";
+        String billNo;
+        String compantname;
+        String companyaddress;
+        String totalbill;
+        String advance;
+        String amount;
+        String accountno;
+        String Application;
+        String MyCompany = null;
+        String MyAdd = null;
+
+        if (VarifyBill()) {
+            billNo = (String) BillNoText.getText();
+            compantname = (String) CompanyNameText.getText();
+            companyaddress = (String) CompanyAddressText.getText();
+            totalbill = (String) WorkingBillText.getText();
+            advance = (String) AdvancePayText.getText();
+            amount = String.valueOf(Integer.valueOf(totalbill) - Integer.valueOf(advance));
+            accountno = (String) AcountDetaileText.getText();
+            Application = (String) Billaplicationtext.getText();
+            System.out.println(billNo + "\n"
+                    + compantname + "\n"
+                    + companyaddress + "\n"
+                    + totalbill + "\n"
+                    + advance + "\n"
+                    + amount + "\n"
+                    + accountno);
+            Image image;
+
+            Document document = new Document();
+            try {
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(billNo + ".pdf"));
+                document.open();
+                Statement st = (Statement) con.createStatement();
+                ResultSet rs = st.executeQuery(quary);
+
+                Paragraph pr1 = new Paragraph();
+                Paragraph pr2 = new Paragraph();
+                Paragraph pr3 = new Paragraph();
+                Paragraph pr4 = new Paragraph();
+                Paragraph pr5 = new Paragraph();
+                Paragraph pr6 = new Paragraph();
+
+                pr1.setFont(FontFactory.getFont(FontFactory.TIMES, 18, Font.BOLD));
+                pr1.add(compantname);
+                document.add(pr1);
+                pr2.setFont(FontFactory.getFont(FontFactory.TIMES, 14));
+                pr2.add(companyaddress);
+                document.add(pr2); // heading last
+
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("\n"));
+
+                pr3.setFont(FontFactory.getFont(FontFactory.TIMES, 12, Font.BOLD));
+                pr3.add(Application);
+                document.add(pr3);
+
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("\n"));
+
+                PdfPTable table = new PdfPTable(2); // 3 columns.
+                table.setWidthPercentage(100); //Width 100%
+                table.setSpacingBefore(10f); //Space before table
+                table.setSpacingAfter(10f); //Space after table
+
+                //Set Column widths
+                float[] columnWidths = {1f, 1f};
+                table.setWidths(columnWidths);
+                PdfPCell cell1 = new PdfPCell(new Paragraph("Total working bill"));
+                cell1.setBorderColor(BaseColor.BLACK);
+                cell1.setPaddingLeft(10);
+                cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell1.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cell1_2 = new PdfPCell(new Paragraph(totalbill));
+                cell1_2.setBorderColor(BaseColor.BLACK);
+                cell1_2.setPaddingLeft(10);
+                cell1_2.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell1_2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cel12 = new PdfPCell(new Paragraph("Avanced pay"));
+                cel12.setBorderColor(BaseColor.BLACK);
+                cel12.setPaddingLeft(10);
+                cel12.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cel12.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cell2_2 = new PdfPCell(new Paragraph(advance));
+                cell2_2.setBorderColor(BaseColor.BLACK);
+                cell2_2.setPaddingLeft(10);
+                cell2_2.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell2_2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                PdfPCell cel13 = new PdfPCell(new Paragraph("Due Amount"));
+                cel13.setBorderColor(BaseColor.BLACK);
+                cel13.setPaddingLeft(10);
+                cel13.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cel13.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+                PdfPCell cel3_2 = new PdfPCell(new Paragraph(amount));
+                cel3_2.setBorderColor(BaseColor.BLACK);
+                cel3_2.setPaddingLeft(10);
+                cel3_2.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cel3_2.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                table.addCell(cell1);
+                table.addCell(cell1_2);
+                table.addCell(cel12);
+                table.addCell(cell2_2);
+                table.addCell(cel13);
+                table.addCell(cel3_2);
+                document.add(table);
+
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("\n"));
+
+                
+                pr4.setFont(FontFactory.getFont(FontFactory.TIMES, 14, Font.BOLD));
+                pr4.add(MyCompany);
+                document.add(pr4);
+                pr5.setFont(FontFactory.getFont(FontFactory.TIMES, 14, Font.BOLD));
+                pr5.add(MyAdd);
+                document.add(pr5);
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("--------------"));
+
+                pr6.setFont(FontFactory.getFont(FontFactory.TIMES, 14, Font.BOLD));
+                pr6.add("Signature");
+                document.add(pr6);
+
+                document.close();
+                JOptionPane.showMessageDialog(null, "Bill successfully created");
+            } catch (DocumentException | HeadlessException | IOException | SQLException ex) {
+                Logger.getLogger(Employee.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            SetVarifyBillToNull();
+        }
+    }//GEN-LAST:event_BillSaveActionPerformed
+
+    private void AdvancePayTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AdvancePayTextActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_AdvancePayTextActionPerformed
 
     private void WorkingBillTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_WorkingBillTextActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_WorkingBillTextActionPerformed
 
-    private void AdvancePayTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AdvancePayTextActionPerformed
+    private void CompanyAddressTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompanyAddressTextActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_AdvancePayTextActionPerformed
-    private boolean VarifyBill(){
-        if(BillNoText.getText().equals("")){
+    }//GEN-LAST:event_CompanyAddressTextActionPerformed
+
+    private void CompanyNameTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompanyNameTextActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_CompanyNameTextActionPerformed
+
+    private void AcountDetaileTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AcountDetaileTextActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_AcountDetaileTextActionPerformed
+
+    private void BillNoTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BillNoTextActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_BillNoTextActionPerformed
+
+    private void AdvancePayTextMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdvancePayTextMouseExited
+
+    }//GEN-LAST:event_AdvancePayTextMouseExited
+
+    private void AdvancePayTextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdvancePayTextMouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_AdvancePayTextMouseEntered
+
+    private void totalAmountMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_totalAmountMouseEntered
+
+
+    }//GEN-LAST:event_totalAmountMouseEntered
+
+    private void totalAmountMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_totalAmountMouseClicked
+        String amount = String.valueOf(Integer.valueOf(WorkingBillText.getText()) - Integer.valueOf(AdvancePayText.getText()));
+        totalAmount.setText(amount);
+    }//GEN-LAST:event_totalAmountMouseClicked
+    private boolean VarifyBill() {
+        if (BillNoText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty Bill number");
             return false;
-        }
-            
-        else if(Billaplicationtext.getText().equals("")){
+        } else if (Billaplicationtext.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Add an application with bill");
             return false;
-        }
-            
-        else if(CompanyNameText.getText().equals("")){
+        } else if (CompanyNameText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty reciver company Name");
             return false;
-        }
-        else if(CompanyAddressText.getText().equals("")){
+        } else if (CompanyAddressText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty reciver company Address");
             return false;
-        }  
-        else if(WorkingBillText.getText().equals("")){
+        } else if (WorkingBillText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Working bill Empty");
             return false;
-        }  
-        else if(AdvancePayText.getText().equals("")){
+        } else if (AdvancePayText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty Advance Pay");
             return false;
-        }  
-        else if(AcountDetaileText.getText().equals("")){
+        } else if (AcountDetaileText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Acount Detaile not found");
             return false;
-        }  
-         
-        
-        else 
+        } else {
             return true;
-        
+        }
+
     }
-    private void SetVarifyBillToNull(){
+
+    private void SetVarifyBillToNull() {
         BillNoText.setText("");
         Billaplicationtext.setText("");
         CompanyNameText.setText("");
@@ -1058,14 +1394,9 @@ public class Employee extends javax.swing.JFrame {
         WorkingBillText.setText("");
         AdvancePayText.setText("");
         AcountDetaileText.setText("");
-        payableAmountOutput.setText("");
-        
+        totalAmount.setText("");
+
     }
-    private void BillSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BillSaveActionPerformed
-        if(VarifyBill()){
-            SetVarifyBillToNull();
-        }
-    }//GEN-LAST:event_BillSaveActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1105,7 +1436,6 @@ public class Employee extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel AcountDetail;
     private javax.swing.JTextField AcountDetaileText;
-    private javax.swing.JButton Add;
     private javax.swing.JTextField AdvancePayText;
     private javax.swing.JLabel Advancepay;
     private javax.swing.JTextField BillNoText;
@@ -1113,60 +1443,44 @@ public class Employee extends javax.swing.JFrame {
     private javax.swing.JTextArea Billaplicationtext;
     private javax.swing.JLabel Billno;
     private javax.swing.JLabel CatagoryLabale;
-    private javax.swing.JLabel CatagoryLabale1;
     private javax.swing.JTextField CompanyAddressText;
     private javax.swing.JTextField CompanyNameText;
-    private javax.swing.JButton Delete;
     private javax.swing.JLabel EmployeeHeading1;
     private javax.swing.JLabel EmployeeLogout;
     private javax.swing.JLabel Exit;
     private javax.swing.JPanel HadingPanal;
-    private javax.swing.JButton PrintFile;
     private javax.swing.JComboBox<String> ProductCatagoryOption;
-    private javax.swing.JLabel ProductDescriptionLabel;
-    private javax.swing.JLabel ProductDescriptionLabel1;
     private javax.swing.JLabel ProductDescriptionLabel2;
     private javax.swing.JLabel ProductDescriptionLabel3;
     private javax.swing.JLabel ProductDescriptionLabel4;
-    private javax.swing.JTextField ProductQuantityText;
-    private javax.swing.JTextField ProductSearchText;
     private javax.swing.JLabel Q1;
     private javax.swing.JLabel Q2;
-    private javax.swing.JComboBox<String> QuotationCatagory;
     private javax.swing.JTextField QuotationNo;
-    private javax.swing.JTextArea QuotationProductDiscription;
     private javax.swing.JTable QuotationProductTable;
     private javax.swing.JPanel QuotationSearchPanel1;
     private javax.swing.JTable QuotationTable;
     private javax.swing.JTextField RecivedrCompanyAddressText;
     private javax.swing.JTextField ReciverCompanyNameText;
     private javax.swing.JButton Save;
-    private javax.swing.JButton Search;
-    private javax.swing.JPanel SendCompanyInfo1;
-    private javax.swing.JTextArea ViewFile;
     private javax.swing.JLabel WorkingBill;
     private javax.swing.JTextField WorkingBillText;
-    private javax.swing.JButton beowseFile;
     private javax.swing.JLabel companyaddress;
     private javax.swing.JLabel companyname;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel min;
     private javax.swing.JLabel payableAmount1;
-    private javax.swing.JLabel payableAmountOutput;
+    private javax.swing.JLabel totalAmount;
     // End of variables declaration//GEN-END:variables
 }

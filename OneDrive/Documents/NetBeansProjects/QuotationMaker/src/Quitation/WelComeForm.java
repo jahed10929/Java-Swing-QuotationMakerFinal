@@ -5,6 +5,13 @@
  */
 package Quitation;
 
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.Statement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author jahed
@@ -15,7 +22,9 @@ public class WelComeForm extends javax.swing.JFrame {
      * Creates new form WelComeForm
      */
     public WelComeForm() {
+
         initComponents();
+
     }
 
     /**
@@ -30,7 +39,6 @@ public class WelComeForm extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         Q1 = new javax.swing.JLabel();
         Q2 = new javax.swing.JLabel();
-        Stat1 = new javax.swing.JLabel();
         Stat2 = new javax.swing.JLabel();
         WelcomeExit = new javax.swing.JLabel();
         Next = new javax.swing.JLabel();
@@ -57,20 +65,11 @@ public class WelComeForm extends javax.swing.JFrame {
         jPanel1.add(Q2);
         Q2.setBounds(0, 130, 310, 30);
 
-        Stat1.setBackground(new java.awt.Color(24, 33, 43));
-        Stat1.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
-        Stat1.setForeground(new java.awt.Color(255, 255, 255));
-        Stat1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Stat1.setText("to create your company profile,");
-        Stat1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        jPanel1.add(Stat1);
-        Stat1.setBounds(0, 280, 310, 40);
-
         Stat2.setBackground(new java.awt.Color(24, 33, 43));
         Stat2.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
         Stat2.setForeground(new java.awt.Color(255, 255, 255));
         Stat2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Stat2.setText("click next or cancel for exit");
+        Stat2.setText("click cancel for exit");
         jPanel1.add(Stat2);
         Stat2.setBounds(0, 300, 310, 40);
 
@@ -137,15 +136,15 @@ public class WelComeForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void WelcomeExitMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_WelcomeExitMouseEntered
-        WelcomeExit.setForeground(new java.awt.Color(128,0,0));
+        WelcomeExit.setForeground(new java.awt.Color(128, 0, 0));
     }//GEN-LAST:event_WelcomeExitMouseEntered
 
     private void WelcomeExitMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_WelcomeExitMouseExited
-        WelcomeExit.setForeground(new java.awt.Color(255,255,255));
+        WelcomeExit.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_WelcomeExitMouseExited
 
     private void WelcomeExitMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_WelcomeExitMouseReleased
-        
+
     }//GEN-LAST:event_WelcomeExitMouseReleased
 
     private void WelcomeExitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_WelcomeExitMouseClicked
@@ -153,23 +152,49 @@ public class WelComeForm extends javax.swing.JFrame {
     }//GEN-LAST:event_WelcomeExitMouseClicked
 
     private void NextMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_NextMouseEntered
-        Next.setForeground(new java.awt.Color(0,128,128));
+        Next.setForeground(new java.awt.Color(0, 128, 128));
     }//GEN-LAST:event_NextMouseEntered
 
     private void NextMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_NextMouseExited
-        Next.setForeground(new java.awt.Color(255,255,255));
+        Next.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_NextMouseExited
 
     private void NextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_NextMouseClicked
-        CreateProfile cp = new CreateProfile();
-        cp.setVisible(true);
-        this.dispose();
+
+        String quary = "SELECT * FROM `admin` WHERE `id`=1";
+
+        Connection con = DBConnection.getConnection();
+
+        try {
+            Statement st = (Statement) con.createStatement();
+            ResultSet rs = st.executeQuery(quary);
+            while (rs.next()) {
+                String user = rs.getString("UserName");
+                String pass = rs.getString("Password");
+                if (user.equals("admin") && pass.equals("admin")) {
+                    CreateProfile cp = new CreateProfile();
+                    cp.setVisible(true);
+                    this.dispose();
+                } else {
+                    Login lin = new Login();
+                    lin.setVisible(true);
+                    this.dispose();
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(WelComeForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+
     }//GEN-LAST:event_NextMouseClicked
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+
+        new WelComeForm();
+
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -205,7 +230,6 @@ public class WelComeForm extends javax.swing.JFrame {
     private javax.swing.JLabel Next;
     private javax.swing.JLabel Q1;
     private javax.swing.JLabel Q2;
-    private javax.swing.JLabel Stat1;
     private javax.swing.JLabel Stat2;
     private javax.swing.JLabel WelcomeExit;
     private javax.swing.JPanel jPanel1;

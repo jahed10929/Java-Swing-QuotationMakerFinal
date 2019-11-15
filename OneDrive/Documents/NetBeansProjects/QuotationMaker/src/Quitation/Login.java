@@ -5,6 +5,20 @@
  */
 package Quitation;
 
+import com.mysql.jdbc.Blob;
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.PreparedStatement;
+import com.mysql.jdbc.Statement;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -18,7 +32,33 @@ public class Login extends javax.swing.JFrame {
      * Creates new form Login
      */
     public Login() {
+
         initComponents();
+        comLogo();
+    }
+
+    private void comLogo() {
+        Connection con = DBConnection.getConnection();
+        String quary = "SELECT * FROM `admin` WHERE `id`=1";
+        try {
+            Statement st = (Statement) con.createStatement();
+            ResultSet rs = st.executeQuery(quary);
+            if (rs.next()) {//now on 1st row  
+                
+                    byte[] img = rs.getBytes("Logo");
+                    ImageIcon image = new ImageIcon(img);
+                    Image im = image.getImage();
+                    Image myImg = im.getScaledInstance(Comlogo.getWidth(), Comlogo.getHeight(),Image.SCALE_SMOOTH);
+                    ImageIcon newImage = new ImageIcon(myImg);
+                    Comlogo.setIcon(newImage);
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "No Data");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     /**
@@ -35,11 +75,11 @@ public class Login extends javax.swing.JFrame {
         password = new javax.swing.JPasswordField();
         Username = new javax.swing.JTextField();
         ShowPass = new javax.swing.JCheckBox();
-        jLabel3 = new javax.swing.JLabel();
         passLabel1 = new javax.swing.JLabel();
         CheckForEmployee = new javax.swing.JCheckBox();
         CheckForAdmin = new javax.swing.JCheckBox();
         login = new javax.swing.JButton();
+        Comlogo = new javax.swing.JLabel();
         HadingPanal = new javax.swing.JPanel();
         Q1 = new javax.swing.JLabel();
         Q2 = new javax.swing.JLabel();
@@ -97,11 +137,6 @@ public class Login extends javax.swing.JFrame {
         MainPanel.add(ShowPass);
         ShowPass.setBounds(520, 50, 21, 30);
 
-        jLabel3.setBackground(new java.awt.Color(44, 53, 63));
-        jLabel3.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
-        MainPanel.add(jLabel3);
-        jLabel3.setBounds(10, 10, 200, 160);
-
         passLabel1.setBackground(new java.awt.Color(24, 33, 43));
         passLabel1.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
         passLabel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -148,6 +183,10 @@ public class Login extends javax.swing.JFrame {
         });
         MainPanel.add(login);
         login.setBounds(340, 160, 100, 30);
+
+        Comlogo.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 1, true));
+        MainPanel.add(Comlogo);
+        Comlogo.setBounds(20, 10, 200, 180);
 
         HadingPanal.setBackground(new java.awt.Color(24, 33, 43));
         HadingPanal.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(44, 53, 63), 3, true));
@@ -242,12 +281,12 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_ExitMouseClicked
 
     private void ExitMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseEntered
-        Exit.setForeground(new java.awt.Color(128,0,0));
+        Exit.setForeground(new java.awt.Color(128, 0, 0));
 
     }//GEN-LAST:event_ExitMouseEntered
 
     private void ExitMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseExited
-        Exit.setForeground(new java.awt.Color(255,255,255));
+        Exit.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_ExitMouseExited
 
     private void minMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseClicked
@@ -255,11 +294,11 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_minMouseClicked
 
     private void minMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseEntered
-        min.setForeground(new java.awt.Color(128,128,128));
+        min.setForeground(new java.awt.Color(128, 128, 128));
     }//GEN-LAST:event_minMouseEntered
 
     private void minMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseExited
-        min.setForeground(new java.awt.Color(255,255,255));
+        min.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_minMouseExited
 
     private void UsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UsernameActionPerformed
@@ -267,23 +306,22 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_UsernameActionPerformed
 
     private void ShowPassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ShowPassActionPerformed
-        if(ShowPass.isSelected()){
-            password.setEchoChar((char)0);
-        }
-        else{
+        if (ShowPass.isSelected()) {
+            password.setEchoChar((char) 0);
+        } else {
             password.setEchoChar(('*'));
         }
     }//GEN-LAST:event_ShowPassActionPerformed
 
     private void CheckForEmployeeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CheckForEmployeeActionPerformed
-        if(CheckForEmployee.isSelected()){
+        if (CheckForEmployee.isSelected()) {
             CheckForAdmin.setSelected(false);
         }
-        
+
     }//GEN-LAST:event_CheckForEmployeeActionPerformed
 
     private void CheckForAdminActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CheckForAdminActionPerformed
-        if(CheckForAdmin.isSelected()){
+        if (CheckForAdmin.isSelected()) {
             CheckForEmployee.setSelected(false);
         }
     }//GEN-LAST:event_CheckForAdminActionPerformed
@@ -294,31 +332,57 @@ public class Login extends javax.swing.JFrame {
         } else if (password.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty password field");
             return false;
-        }
-        else if (!CheckForAdmin.isSelected() && !CheckForEmployee.isSelected()) {
+        } else if (!CheckForAdmin.isSelected() && !CheckForEmployee.isSelected()) {
             JOptionPane.showMessageDialog(null, "Admin/Employee not selected");
             return false;
-        } 
-       
-        else {
+        } else {
             return true;
         }
     }
     private void loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginActionPerformed
-        if(varifydata()){
-            if(CheckForAdmin.isSelected()){
-                Admin adminpage = new Admin();
-                adminpage.setVisible(true);
-                this.dispose();
-            }
-            
-            else if(CheckForEmployee.isSelected()){
-                Employee Employeepage = new Employee();
-                Employeepage.setVisible(true);
-                this.dispose();
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps1, ps2;
+        ResultSet rs;
+
+        if (varifydata()) {
+            if (CheckForAdmin.isSelected()) {
+                try {
+                    ps1 = (PreparedStatement) con.prepareStatement("SELECT * FROM `admin` WHERE `UserName` = ? AND `Password` = ?");
+                    ps1.setString(1, Username.getText());
+                    ps1.setString(2, String.valueOf(password.getPassword()));
+                    rs = ps1.executeQuery();
+                    if (rs.next()) {
+                        Admin adminpage = new Admin();
+                        adminpage.setVisible(true);
+                        this.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Wrong user name or password");
+                    }
+                } catch (SQLException ex) {
+                    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            } else if (CheckForEmployee.isSelected()) {
+
+                try {
+                    ps1 = (PreparedStatement) con.prepareStatement("SELECT * FROM `user` WHERE `UserName` = ? AND `Password` = ?");
+                    ps1.setString(1, Username.getText());
+                    ps1.setString(2, String.valueOf(password.getPassword()));
+                    rs = ps1.executeQuery();
+                    if (rs.next()) {
+                        Employee Employeepage = new Employee();
+                        Employeepage.setVisible(true);
+                        this.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Wrong user name or password");
+                    }
+                } catch (SQLException ex) {
+                    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             }
         }
-        
+
     }//GEN-LAST:event_loginActionPerformed
 
     private void passwordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordActionPerformed
@@ -363,6 +427,7 @@ public class Login extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox CheckForAdmin;
     private javax.swing.JCheckBox CheckForEmployee;
+    private javax.swing.JLabel Comlogo;
     private javax.swing.JLabel Exit;
     private javax.swing.JPanel HadingPanal;
     private javax.swing.JLabel LoginLabel;
@@ -372,7 +437,6 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JCheckBox ShowPass;
     private javax.swing.JLabel UserLabel;
     private javax.swing.JTextField Username;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JButton login;
     private javax.swing.JLabel min;
     private javax.swing.JLabel passLabel1;

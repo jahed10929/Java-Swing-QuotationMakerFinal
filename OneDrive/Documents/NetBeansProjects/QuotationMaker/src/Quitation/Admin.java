@@ -5,13 +5,25 @@
  */
 package Quitation;
 
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.PreparedStatement;
+import com.mysql.jdbc.Statement;
+import java.sql.ResultSet;
 import java.awt.Image;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -23,8 +35,95 @@ public class Admin extends javax.swing.JFrame {
      * Creates new form Admin
      */
     String Imagepath;
+
     public Admin() {
         initComponents();
+        ShowDataIntable();
+        ShowDataInproducttable();
+    }
+
+    public ArrayList<EmployeeDataTable> EmployeeList() {
+        ArrayList<EmployeeDataTable> EmployeeList = new ArrayList<EmployeeDataTable>();
+        Connection con = DBConnection.getConnection();
+        String query = "SELECT * FROM `user`";
+        Statement st;
+        ResultSet rs;
+        try {
+            st = (Statement) con.createStatement();
+            rs = st.executeQuery(query);
+            EmployeeDataTable employeedata;
+
+            while (rs.next()) {
+                employeedata = new EmployeeDataTable(rs.getInt("id"),
+                        rs.getString("EmployeeName"),
+                        rs.getString("EmployeeAddress"),
+                        rs.getString("mobile"),
+                        rs.getString("Username"),
+                        rs.getString("password"));
+                EmployeeList.add(employeedata);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return EmployeeList;
+    }
+
+    public ArrayList<ProductdataTable> ProductList() {
+        ArrayList<ProductdataTable> ProductList = new ArrayList<ProductdataTable>();
+        Connection con = DBConnection.getConnection();
+        String query = "SELECT * FROM `product` WHERE `Catagory` = "+"\""+(String)CatagoryOption.getSelectedItem()+"\"";
+        
+        Statement st;
+        ResultSet rs;
+        try {
+            st = (Statement) con.createStatement();
+            rs = st.executeQuery(query);
+            ProductdataTable productdata;
+            while (rs.next()) {
+                productdata = new ProductdataTable(rs.getInt("id"),
+                        rs.getString("Discription"),
+                        rs.getString("Catagory"),
+                        rs.getString("unit"),
+                        rs.getFloat("price"));
+                ProductList.add(productdata);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Admin.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ProductList;
+    }
+
+    private void ShowDataIntable() {
+        ArrayList<EmployeeDataTable> list = EmployeeList();
+        DefaultTableModel model = (DefaultTableModel) EmployeeInfoTable.getModel();
+        Object[] row = new Object[6];
+        for (int i = 0; i < list.size(); i++) {
+
+            row[0] = list.get(i).getId();
+            row[1] = list.get(i).getname();
+            row[2] = list.get(i).getaddress();
+            row[3] = list.get(i).getmobile();
+            row[4] = list.get(i).getuser();
+            row[5] = list.get(i).getpass();
+
+            model.addRow(row);
+        }
+    }
+
+    private void ShowDataInproducttable() {
+        ArrayList<ProductdataTable> list = ProductList();
+        DefaultTableModel model = (DefaultTableModel) AdminProductTable.getModel();
+        Object[] row = new Object[5];
+        for (int i = 0; i < list.size(); i++) {
+
+            row[0] = list.get(i).getId();
+            row[1] = list.get(i).getDiscription();
+            row[2] = list.get(i).getCatagory();
+            row[3] = list.get(i).getUnit();
+            row[4] = list.get(i).getPrice();
+
+            model.addRow(row);
+        }
     }
 
     /**
@@ -87,6 +186,7 @@ public class Admin extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         EmpDelet = new javax.swing.JButton();
         EmpSave = new javax.swing.JButton();
+        Id = new javax.swing.JLabel();
         Product = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         ProductCatagoryLabale = new javax.swing.JLabel();
@@ -94,14 +194,15 @@ public class Admin extends javax.swing.JFrame {
         EmployeeAddressLabel1 = new javax.swing.JLabel();
         EmployeeNamelabale1 = new javax.swing.JLabel();
         ProductPriceText = new javax.swing.JTextField();
-        ProUpdate = new javax.swing.JButton();
-        AddProduct = new javax.swing.JLabel();
-        ProDelet = new javax.swing.JButton();
+        proId = new javax.swing.JLabel();
+        Update = new javax.swing.JButton();
         ProSave = new javax.swing.JButton();
         UnitOption = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         ProductDiscription = new javax.swing.JTextArea();
         CatagoryOption = new javax.swing.JComboBox<>();
+        AddProduct1 = new javax.swing.JLabel();
+        ProDelet = new javax.swing.JButton();
         ShowEmployeeData1 = new javax.swing.JPanel();
         AllProduct = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -407,24 +508,29 @@ public class Admin extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Employee name", "Employee Address", "Employee mobile", "User name", "Password"
+                "id", "Name", "Address", "mobile", "User name", "pass"
             }
         ));
         EmployeeInfoTable.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        EmployeeInfoTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                EmployeeInfoTableMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(EmployeeInfoTable);
 
         ShowEmployeeData.add(jScrollPane2);
-        jScrollPane2.setBounds(0, 62, 450, 460);
+        jScrollPane2.setBounds(0, 62, 960, 200);
 
         jLabel3.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("Select Employee to update/delete");
         jLabel3.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(24, 33, 43), 3, true));
         ShowEmployeeData.add(jLabel3);
-        jLabel3.setBounds(-10, 0, 500, 40);
+        jLabel3.setBounds(-10, 0, 980, 40);
 
         Employee.add(ShowEmployeeData);
-        ShowEmployeeData.setBounds(510, 20, 450, 520);
+        ShowEmployeeData.setBounds(10, 10, 960, 260);
 
         jPanel1.setBackground(new java.awt.Color(234, 236, 238));
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
@@ -433,22 +539,22 @@ public class Admin extends javax.swing.JFrame {
         PassRepeatlabale.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         PassRepeatlabale.setText("Comfirm Password");
         jPanel1.add(PassRepeatlabale);
-        PassRepeatlabale.setBounds(10, 360, 210, 40);
+        PassRepeatlabale.setBounds(480, 160, 210, 40);
 
         EmployeeUsernamelabale.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeUsernamelabale.setText("Employee User Name");
         jPanel1.add(EmployeeUsernamelabale);
-        EmployeeUsernamelabale.setBounds(10, 240, 210, 40);
+        EmployeeUsernamelabale.setBounds(10, 110, 210, 40);
 
         EmployeeMobilelabale.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeMobilelabale.setText("Employee mobile");
         jPanel1.add(EmployeeMobilelabale);
-        EmployeeMobilelabale.setBounds(10, 180, 210, 40);
+        EmployeeMobilelabale.setBounds(480, 110, 210, 40);
 
         EmployeeAddressLabel.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeAddressLabel.setText("Employee Address");
         jPanel1.add(EmployeeAddressLabel);
-        EmployeeAddressLabel.setBounds(10, 120, 210, 40);
+        EmployeeAddressLabel.setBounds(480, 60, 210, 40);
 
         EmployeeNamelabale.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeNamelabale.setText("Employee name");
@@ -463,17 +569,17 @@ public class Admin extends javax.swing.JFrame {
             }
         });
         jPanel1.add(EmployeeUserNameText);
-        EmployeeUserNameText.setBounds(230, 240, 240, 40);
+        EmployeeUserNameText.setBounds(230, 110, 240, 40);
 
         EmployeePasslabale1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeePasslabale1.setText("Employee Password");
         jPanel1.add(EmployeePasslabale1);
-        EmployeePasslabale1.setBounds(10, 300, 210, 40);
+        EmployeePasslabale1.setBounds(10, 160, 210, 40);
 
         EmployeeAddressText.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeAddressText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jPanel1.add(EmployeeAddressText);
-        EmployeeAddressText.setBounds(230, 120, 240, 40);
+        EmployeeAddressText.setBounds(700, 60, 240, 40);
 
         EmployeeNameText.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeNameText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -488,17 +594,17 @@ public class Admin extends javax.swing.JFrame {
             }
         });
         jPanel1.add(EmployeeMobileText);
-        EmployeeMobileText.setBounds(230, 180, 240, 40);
+        EmployeeMobileText.setBounds(700, 110, 240, 40);
 
         EmployeePassFild2.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeePassFild2.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jPanel1.add(EmployeePassFild2);
-        EmployeePassFild2.setBounds(230, 360, 240, 40);
+        EmployeePassFild2.setBounds(700, 160, 240, 40);
 
         EmployeePassFild1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeePassFild1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jPanel1.add(EmployeePassFild1);
-        EmployeePassFild1.setBounds(230, 300, 240, 40);
+        EmployeePassFild1.setBounds(230, 160, 240, 40);
 
         ShowPass.setFont(new java.awt.Font("Comic Sans MS", 2, 18)); // NOI18N
         ShowPass.setText("Show PassWord");
@@ -509,7 +615,7 @@ public class Admin extends javax.swing.JFrame {
             }
         });
         jPanel1.add(ShowPass);
-        ShowPass.setBounds(230, 400, 200, 23);
+        ShowPass.setBounds(730, 200, 200, 23);
 
         EmpUpdate.setBackground(new java.awt.Color(234, 236, 238));
         EmpUpdate.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
@@ -523,14 +629,14 @@ public class Admin extends javax.swing.JFrame {
             }
         });
         jPanel1.add(EmpUpdate);
-        EmpUpdate.setBounds(70, 460, 100, 28);
+        EmpUpdate.setBounds(290, 220, 100, 28);
 
         jLabel1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Add/Update Employee Information");
+        jLabel1.setText("Add/Update/Delete Employee Information");
         jLabel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(24, 33, 43), 3, true));
         jPanel1.add(jLabel1);
-        jLabel1.setBounds(-10, 0, 500, 40);
+        jLabel1.setBounds(150, 0, 820, 40);
 
         EmpDelet.setBackground(new java.awt.Color(234, 236, 238));
         EmpDelet.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
@@ -544,11 +650,11 @@ public class Admin extends javax.swing.JFrame {
             }
         });
         jPanel1.add(EmpDelet);
-        EmpDelet.setBounds(320, 460, 100, 28);
+        EmpDelet.setBounds(540, 220, 100, 28);
 
         EmpSave.setBackground(new java.awt.Color(234, 236, 238));
         EmpSave.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        EmpSave.setText("Save");
+        EmpSave.setText("Add");
         EmpSave.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
         EmpSave.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         EmpSave.setFocusPainted(false);
@@ -558,10 +664,16 @@ public class Admin extends javax.swing.JFrame {
             }
         });
         jPanel1.add(EmpSave);
-        EmpSave.setBounds(200, 460, 90, 28);
+        EmpSave.setBounds(420, 220, 90, 28);
+
+        Id.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        Id.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        Id.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(24, 33, 43), 3, true));
+        jPanel1.add(Id);
+        Id.setBounds(0, 0, 150, 40);
 
         Employee.add(jPanel1);
-        jPanel1.setBounds(20, 20, 480, 520);
+        jPanel1.setBounds(10, 290, 960, 260);
 
         MainTabbpane.addTab("Employee", Employee);
 
@@ -576,48 +688,104 @@ public class Admin extends javax.swing.JFrame {
         ProductCatagoryLabale.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         ProductCatagoryLabale.setText("Catagory");
         jPanel2.add(ProductCatagoryLabale);
-        ProductCatagoryLabale.setBounds(20, 70, 160, 40);
+        ProductCatagoryLabale.setBounds(20, 70, 160, 30);
 
         EmployeeMobilelabale1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeMobilelabale1.setText("Product price");
         jPanel2.add(EmployeeMobilelabale1);
-        EmployeeMobilelabale1.setBounds(20, 330, 160, 40);
+        EmployeeMobilelabale1.setBounds(20, 170, 160, 30);
 
         EmployeeAddressLabel1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeAddressLabel1.setText("Product Unit");
         jPanel2.add(EmployeeAddressLabel1);
-        EmployeeAddressLabel1.setBounds(20, 250, 160, 40);
+        EmployeeAddressLabel1.setBounds(20, 120, 160, 30);
 
         EmployeeNamelabale1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         EmployeeNamelabale1.setText("Product discription");
         jPanel2.add(EmployeeNamelabale1);
-        EmployeeNamelabale1.setBounds(18, 160, 162, 40);
+        EmployeeNamelabale1.setBounds(460, 120, 162, 40);
 
         ProductPriceText.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
         ProductPriceText.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jPanel2.add(ProductPriceText);
-        ProductPriceText.setBounds(190, 330, 210, 40);
+        ProductPriceText.setBounds(190, 170, 210, 30);
 
-        ProUpdate.setBackground(new java.awt.Color(234, 236, 238));
-        ProUpdate.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProUpdate.setText("Update");
-        ProUpdate.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        ProUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        ProUpdate.setFocusPainted(false);
-        ProUpdate.addActionListener(new java.awt.event.ActionListener() {
+        proId.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        proId.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        proId.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(24, 33, 43), 3, true));
+        jPanel2.add(proId);
+        proId.setBounds(0, 0, 170, 40);
+
+        Update.setBackground(new java.awt.Color(234, 236, 238));
+        Update.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        Update.setText("Update");
+        Update.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        Update.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Update.setFocusPainted(false);
+        Update.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ProUpdateActionPerformed(evt);
+                UpdateActionPerformed(evt);
             }
         });
-        jPanel2.add(ProUpdate);
-        ProUpdate.setBounds(50, 440, 100, 28);
+        jPanel2.add(Update);
+        Update.setBounds(338, 220, 80, 28);
 
-        AddProduct.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        AddProduct.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        AddProduct.setText("Add/Update/delete product ");
-        AddProduct.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(24, 33, 43), 3, true));
-        jPanel2.add(AddProduct);
-        AddProduct.setBounds(-10, 0, 440, 50);
+        ProSave.setBackground(new java.awt.Color(234, 236, 238));
+        ProSave.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        ProSave.setText("Add");
+        ProSave.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        ProSave.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        ProSave.setFocusPainted(false);
+        ProSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ProSaveActionPerformed(evt);
+            }
+        });
+        jPanel2.add(ProSave);
+        ProSave.setBounds(460, 220, 60, 28);
+
+        UnitOption.setBackground(new java.awt.Color(234, 236, 238));
+        UnitOption.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        UnitOption.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "None", "sft", "rft", "nos", "Others" }));
+        UnitOption.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        UnitOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                UnitOptionActionPerformed(evt);
+            }
+        });
+        jPanel2.add(UnitOption);
+        UnitOption.setBounds(190, 120, 210, 30);
+
+        ProductDiscription.setBackground(new java.awt.Color(234, 236, 238));
+        ProductDiscription.setColumns(20);
+        ProductDiscription.setFont(new java.awt.Font("Comic Sans MS", 2, 16)); // NOI18N
+        ProductDiscription.setLineWrap(true);
+        ProductDiscription.setRows(5);
+        ProductDiscription.setAutoscrolls(false);
+        ProductDiscription.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        jScrollPane1.setViewportView(ProductDiscription);
+
+        jPanel2.add(jScrollPane1);
+        jScrollPane1.setBounds(650, 70, 270, 130);
+
+        CatagoryOption.setBackground(new java.awt.Color(234, 236, 238));
+        CatagoryOption.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        CatagoryOption.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "none", "Civil Work", "Iron Work", "Wooden Work", "Steel Work", "Sanetary Work", "Plambing Work", "Electrical Work", "Landscap", "Others" }));
+        CatagoryOption.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        CatagoryOption.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CatagoryOptionActionPerformed(evt);
+            }
+        });
+        jPanel2.add(CatagoryOption);
+        CatagoryOption.setBounds(190, 70, 210, 30);
+
+        AddProduct1.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
+        AddProduct1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        AddProduct1.setText("Add/Update/delete product ");
+        AddProduct1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(24, 33, 43), 3, true));
+        jPanel2.add(AddProduct1);
+        AddProduct1.setBounds(170, 0, 800, 40);
 
         ProDelet.setBackground(new java.awt.Color(234, 236, 238));
         ProDelet.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
@@ -631,60 +799,10 @@ public class Admin extends javax.swing.JFrame {
             }
         });
         jPanel2.add(ProDelet);
-        ProDelet.setBounds(280, 440, 100, 28);
-
-        ProSave.setBackground(new java.awt.Color(234, 236, 238));
-        ProSave.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        ProSave.setText("Save");
-        ProSave.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        ProSave.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        ProSave.setFocusPainted(false);
-        ProSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ProSaveActionPerformed(evt);
-            }
-        });
-        jPanel2.add(ProSave);
-        ProSave.setBounds(170, 440, 90, 28);
-
-        UnitOption.setBackground(new java.awt.Color(234, 236, 238));
-        UnitOption.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        UnitOption.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "sft", "rft", "nos", "Others" }));
-        UnitOption.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        UnitOption.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                UnitOptionActionPerformed(evt);
-            }
-        });
-        jPanel2.add(UnitOption);
-        UnitOption.setBounds(190, 250, 210, 40);
-
-        ProductDiscription.setBackground(new java.awt.Color(234, 236, 238));
-        ProductDiscription.setColumns(20);
-        ProductDiscription.setFont(new java.awt.Font("Comic Sans MS", 2, 16)); // NOI18N
-        ProductDiscription.setLineWrap(true);
-        ProductDiscription.setRows(5);
-        ProductDiscription.setAutoscrolls(false);
-        ProductDiscription.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
-        jScrollPane1.setViewportView(ProductDiscription);
-
-        jPanel2.add(jScrollPane1);
-        jScrollPane1.setBounds(190, 130, 210, 100);
-
-        CatagoryOption.setBackground(new java.awt.Color(234, 236, 238));
-        CatagoryOption.setFont(new java.awt.Font("Comic Sans MS", 3, 18)); // NOI18N
-        CatagoryOption.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Civil Work", "Iron Work", "Wooden Work", "Steel Work", "Sanetary Work", "Plambing Work", "Electrical Work", "Landscap", "Others" }));
-        CatagoryOption.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        CatagoryOption.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                CatagoryOptionActionPerformed(evt);
-            }
-        });
-        jPanel2.add(CatagoryOption);
-        CatagoryOption.setBounds(190, 70, 210, 40);
+        ProDelet.setBounds(570, 220, 58, 28);
 
         Product.add(jPanel2);
-        jPanel2.setBounds(30, 30, 410, 510);
+        jPanel2.setBounds(10, 280, 960, 260);
 
         ShowEmployeeData1.setBackground(new java.awt.Color(234, 236, 238));
         ShowEmployeeData1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
@@ -696,34 +814,28 @@ public class Admin extends javax.swing.JFrame {
         AllProduct.setText("Select product to update/delete");
         AllProduct.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(24, 33, 43), 3, true));
         ShowEmployeeData1.add(AllProduct);
-        AllProduct.setBounds(-10, 0, 530, 50);
+        AllProduct.setBounds(-10, 0, 980, 40);
 
         AdminProductTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Sl.no", "Product Discription", "Unit", "Price"
+                "Sl.no", " Discription", "Catagory", "Unit", "Price"
             }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+        ));
+        AdminProductTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                AdminProductTableMouseClicked(evt);
             }
         });
         jScrollPane3.setViewportView(AdminProductTable);
-        if (AdminProductTable.getColumnModel().getColumnCount() > 0) {
-            AdminProductTable.getColumnModel().getColumn(2).setResizable(false);
-        }
 
         ShowEmployeeData1.add(jScrollPane3);
-        jScrollPane3.setBounds(0, 50, 510, 460);
+        jScrollPane3.setBounds(0, 50, 960, 190);
 
         Product.add(ShowEmployeeData1);
-        ShowEmployeeData1.setBounds(450, 30, 510, 510);
+        ShowEmployeeData1.setBounds(10, 20, 960, 240);
 
         MainTabbpane.addTab("Product", Product);
 
@@ -760,18 +872,18 @@ public class Admin extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void ExitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseClicked
-        if(JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to exit?")==0){
+        if (JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to exit?") == 0) {
             System.exit(0);
         }
     }//GEN-LAST:event_ExitMouseClicked
 
     private void ExitMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseEntered
-        Exit.setForeground(new java.awt.Color(128,0,0));
+        Exit.setForeground(new java.awt.Color(128, 0, 0));
 
     }//GEN-LAST:event_ExitMouseEntered
 
     private void ExitMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseExited
-        Exit.setForeground(new java.awt.Color(255,255,255));
+        Exit.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_ExitMouseExited
 
     private void minMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseClicked
@@ -779,11 +891,11 @@ public class Admin extends javax.swing.JFrame {
     }//GEN-LAST:event_minMouseClicked
 
     private void minMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseEntered
-        min.setForeground(new java.awt.Color(128,128,128));
+        min.setForeground(new java.awt.Color(128, 128, 128));
     }//GEN-LAST:event_minMouseEntered
 
     private void minMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseExited
-        min.setForeground(new java.awt.Color(255,255,255));
+        min.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_minMouseExited
 
     private void EmployeeUserNameTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EmployeeUserNameTextActionPerformed
@@ -795,10 +907,43 @@ public class Admin extends javax.swing.JFrame {
     }//GEN-LAST:event_EmployeeMobileTextActionPerformed
 
     private void EmpUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EmpUpdateActionPerformed
-        if(varifyEmployeedata()){
-            SetEmployeeNull();
-            JOptionPane.showMessageDialog(null, "Update complet");
+
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifyEmployeedata()) {
+            try {
+                ps = (PreparedStatement) con.prepareStatement("UPDATE `user` SET "
+                        + "`EmployeeName`=?,"
+                        + "`EmployeeAddress`=?,"
+                        + "`mobile`=?,"
+                        + "`Username`=?,"
+                        + "`password`=? "
+                        + "WHERE `id`=?");
+                ps.setString(1, EmployeeNameText.getText());
+                ps.setString(2, EmployeeAddressText.getText());
+                ps.setString(3, EmployeeMobileText.getText());
+                ps.setString(4, EmployeeUserNameText.getText());
+                ps.setString(5, String.valueOf(EmployeePassFild2.getPassword()));
+                ps.setString(6, Id.getText());
+
+                if (ps.executeUpdate() != 0) {
+                    DefaultTableModel model = (DefaultTableModel) EmployeeInfoTable.getModel();
+                    model.setRowCount(0);
+                    ShowDataIntable();
+                    JOptionPane.showMessageDialog(null, "Data Updated Succefully");
+
+                    SetEmployeeNull();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
         }
+
+
     }//GEN-LAST:event_EmpUpdateActionPerformed
 
     private void ShowPassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ShowPassActionPerformed
@@ -834,33 +979,27 @@ public class Admin extends javax.swing.JFrame {
         if (EmployeeNameText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty company name field");
             return false;
-        } 
-        else if (EmployeeAddressText.getText().equals("")) {
+        } else if (EmployeeAddressText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty company address field");
             return false;
-        } 
-        else if (EmployeeMobileText.getText().equals("")) {
+        } else if (EmployeeMobileText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Invalid mobile number");
             return false;
-        }
-        else if (EmployeeUserNameText.getText().equals("")) {
+        } else if (EmployeeUserNameText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty user name field");
             return false;
-        }
-        
-        else if (EmployeePassFild1.getText().equals("")) {
+        } else if (EmployeePassFild1.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty password field");
             return false;
-        } 
-        else if (!EmployeePassFild1.getText().equals(EmployeePassFild2.getText())) {
+        } else if (!EmployeePassFild1.getText().equals(EmployeePassFild2.getText())) {
             JOptionPane.showMessageDialog(null, "Password not matched");
 
             return false;
-        } 
-        else {
+        } else {
             return true;
         }
     }
+
     private boolean varifyCompanydata() {
         if (CompanynameText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty company name field");
@@ -885,6 +1024,7 @@ public class Admin extends javax.swing.JFrame {
             return true;
         }
     }
+
     private boolean varifyProductdata() {
         if (ProductDiscription.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty Product");
@@ -892,12 +1032,12 @@ public class Admin extends javax.swing.JFrame {
         } else if (ProductPriceText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Product price not set");
             return false;
-        } 
-        else {
+        } else {
             return true;
         }
     }
-    private void SetAdminNull(){
+
+    private void SetAdminNull() {
         CompanynameText.setText(null);
         CompanyAddressText.setText(null);
         UserNamText.setText(null);
@@ -907,9 +1047,34 @@ public class Admin extends javax.swing.JFrame {
         picSpace.setIcon(null);
     }
     private void UdateAdminProActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UdateAdminProActionPerformed
-        if(varifyCompanydata()){
-            SetAdminNull();    
-            JOptionPane.showMessageDialog(null, "Update Sucessfull");
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifyCompanydata()) {
+            try {
+                ps = (PreparedStatement) con.prepareStatement("UPDATE `admin` SET"
+                        + "`CompanyName`=?,"
+                        + "`CompanyAddress`=?,"
+                        + "`UserName`=?,"
+                        + "`Password`=?,"
+                        + "`Logo`=? WHERE 1");
+                ps.setString(1, CompanynameText.getText());
+                ps.setString(2, CompanyAddressText.getText());
+                ps.setString(3, UserNamText.getText());
+                ps.setString(4, String.valueOf(AdminPass2.getPassword()));
+                InputStream img = new FileInputStream(new File(Imagepath));
+                ps.setBlob(5, img);
+                if (ps.executeUpdate() != 0) {
+                    JOptionPane.showMessageDialog(null, "done update");
+                    SetAdminNull();
+
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
         }
     }//GEN-LAST:event_UdateAdminProActionPerformed
     private ImageIcon resizepic(String picpath) {
@@ -948,40 +1113,89 @@ public class Admin extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ShowAdminPassActionPerformed
 
-    private void ProUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProUpdateActionPerformed
-        if(varifyProductdata()){
-            SetProductNull();    
-            JOptionPane.showMessageDialog(null, "Product update Sucessfull");
-        }
-    }//GEN-LAST:event_ProUpdateActionPerformed
-
     private void UnitOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UnitOptionActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_UnitOptionActionPerformed
 
     private void CatagoryOptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CatagoryOptionActionPerformed
-        // TODO add your handling code here:
+        DefaultTableModel model = (DefaultTableModel) AdminProductTable.getModel();
+                    model.setRowCount(0);
+                    ShowDataInproducttable();
     }//GEN-LAST:event_CatagoryOptionActionPerformed
-    private void SetProductNull(){
-        CatagoryOption.setSelectedIndex(0);
+    private void SetProductNull() {
         ProductDiscription.setText(null);
         UnitOption.setSelectedIndex(0);
         ProductPriceText.setText(null);
-    } 
+    }
     private void ProSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProSaveActionPerformed
-        if(varifyProductdata()){
-             SetProductNull();   
-            JOptionPane.showMessageDialog(null, "product saved Sucessfully");
+
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifyProductdata()) {
+            try {
+                //INSERT INTO `product`(`id`, , , , ) VALUES ([value-1],[value-2],[value-3],[value-4],[value-5])
+                ps = (PreparedStatement) con.prepareStatement("INSERT INTO `product`"
+                        + "(  `Discription`, "
+                        + "`Catagory`, `unit`, "
+                        + "`price`) "
+                        + "VALUES (?,?,?,?)");
+                ps.setString(1, ProductDiscription.getText());
+                ps.setString(2, (String) CatagoryOption.getSelectedItem());
+                ps.setString(3, (String) UnitOption.getSelectedItem());
+                ps.setString(4, ProductPriceText.getText());
+
+                if (ps.executeUpdate() != 0) {
+                    DefaultTableModel model = (DefaultTableModel) AdminProductTable.getModel();
+                    model.setRowCount(0);
+                    ShowDataInproducttable();
+                    JOptionPane.showMessageDialog(null, "Data Added Succefully");
+
+                    SetProductNull();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
         }
+
+
     }//GEN-LAST:event_ProSaveActionPerformed
 
-    private void ProDeletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProDeletActionPerformed
-        if(varifyProductdata()){
-            SetProductNull();    
-            JOptionPane.showMessageDialog(null, "Product deteted Sucessfull");
+    private void UpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UpdateActionPerformed
+        
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifyProductdata()) {
+            try {
+                ps = (PreparedStatement) con.prepareStatement("UPDATE `product` SET `Discription`=?, `Catagory`=?, `unit`=?, `price`=? WHERE `id`=?");
+                ps.setString(1, ProductDiscription.getText());
+                ps.setString(2, (String) CatagoryOption.getSelectedItem());
+                ps.setString(3, (String) UnitOption.getSelectedItem());
+                ps.setString(4, ProductPriceText.getText());
+                ps.setString(5, proId.getText());
+
+                if (ps.executeUpdate() != 0) {
+                    DefaultTableModel model = (DefaultTableModel) AdminProductTable.getModel();
+                    model.setRowCount(0);
+                    ShowDataInproducttable();
+                    JOptionPane.showMessageDialog(null, "Data Updated Succefully");
+
+                    SetProductNull();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
         }
-    }//GEN-LAST:event_ProDeletActionPerformed
-    private void SetEmployeeNull(){
+        
+    }//GEN-LAST:event_UpdateActionPerformed
+    private void SetEmployeeNull() {
         EmployeeNameText.setText(null);
         EmployeeAddressText.setText(null);
         EmployeeMobileText.setText(null);
@@ -989,23 +1203,75 @@ public class Admin extends javax.swing.JFrame {
         EmployeePassFild1.setText(null);
         EmployeePassFild2.setText(null);
         ShowPass.setSelected(false);
-    } 
+    }
     private void EmpSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EmpSaveActionPerformed
-        if(varifyEmployeedata()){
-            SetEmployeeNull();
-            JOptionPane.showMessageDialog(null, "Done");
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifyEmployeedata()) {
+            try {
+                ps = (PreparedStatement) con.prepareStatement("INSERT INTO `user`"
+                        + "( `EmployeeName`, "
+                        + "`EmployeeAddress`, "
+                        + "`mobile`, `Username`, "
+                        + "`password`) "
+                        + "VALUES (?,?,?,?,?)");
+                ps.setString(1, EmployeeNameText.getText());
+                ps.setString(2, EmployeeAddressText.getText());
+                ps.setString(3, EmployeeMobileText.getText());
+                ps.setString(4, EmployeeUserNameText.getText());
+                ps.setString(5, String.valueOf(EmployeePassFild2.getPassword()));
+
+                if (ps.executeUpdate() != 0) {
+                    DefaultTableModel model = (DefaultTableModel) EmployeeInfoTable.getModel();
+                    model.setRowCount(0);
+                    ShowDataIntable();
+                    JOptionPane.showMessageDialog(null, "Data Added Succefully");
+
+                    SetEmployeeNull();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
         }
+
+
     }//GEN-LAST:event_EmpSaveActionPerformed
 
     private void EmpDeletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EmpDeletActionPerformed
-       if(varifyEmployeedata()){
-           SetEmployeeNull(); 
-           JOptionPane.showMessageDialog(null, "Data delated");
+
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifyEmployeedata()) {
+            try {
+                ps = (PreparedStatement) con.prepareStatement("DELETE FROM `user` WHERE `id`=?");
+                ps.setString(1, Id.getText());
+
+                if (ps.executeUpdate() != 0) {
+                    DefaultTableModel model = (DefaultTableModel) EmployeeInfoTable.getModel();
+                    model.setRowCount(0);
+                    ShowDataIntable();
+                    JOptionPane.showMessageDialog(null, "Data Deleted Succefully");
+
+                    SetEmployeeNull();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
         }
+
+        
     }//GEN-LAST:event_EmpDeletActionPerformed
 
     private void AdminLogoutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdminLogoutMouseClicked
-        if(JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to Logout?")==0){
+        if (JOptionPane.showConfirmDialog(null, "Unsaved data will be lost\nWant to Logout?") == 0) {
             Login lin = new Login();
             lin.setVisible(true);
             this.dispose();
@@ -1019,6 +1285,58 @@ public class Admin extends javax.swing.JFrame {
     private void AdminLogoutMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdminLogoutMouseExited
         AdminLogout.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_AdminLogoutMouseExited
+
+    private void EmployeeInfoTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_EmployeeInfoTableMouseClicked
+        int i = EmployeeInfoTable.getSelectedRow();
+
+        TableModel model = EmployeeInfoTable.getModel();
+        Id.setText(model.getValueAt(i, 0).toString());
+        EmployeeNameText.setText(model.getValueAt(i, 1).toString());
+
+        EmployeeAddressText.setText(model.getValueAt(i, 2).toString());
+        EmployeeMobileText.setText(model.getValueAt(i, 3).toString());
+        EmployeeUserNameText.setText(model.getValueAt(i, 4).toString());
+
+        EmployeePassFild1.setText(model.getValueAt(i, 5).toString());
+        EmployeePassFild2.setText(model.getValueAt(i, 5).toString());
+    }//GEN-LAST:event_EmployeeInfoTableMouseClicked
+
+    private void AdminProductTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdminProductTableMouseClicked
+        int i = AdminProductTable.getSelectedRow();
+        TableModel model = AdminProductTable.getModel();
+        proId.setText(model.getValueAt(i, 0).toString()); 
+        ProductDiscription.setText(model.getValueAt(i, 1).toString());        
+        CatagoryOption.setSelectedItem(model.getValueAt(i, 2).toString());
+        UnitOption.setSelectedItem(model.getValueAt(i, 3).toString());
+        ProductPriceText.setText(model.getValueAt(i, 4).toString());
+        
+    }//GEN-LAST:event_AdminProductTableMouseClicked
+
+    private void ProDeletActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProDeletActionPerformed
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifyProductdata()) {
+            try {
+                ps = (PreparedStatement) con.prepareStatement("DELETE FROM `product` WHERE `id`=?");
+                ps.setString(1, proId.getText());
+
+                if (ps.executeUpdate() != 0) {
+                    DefaultTableModel model = (DefaultTableModel) AdminProductTable.getModel();
+                    model.setRowCount(0);
+                    ShowDataInproducttable();
+                    JOptionPane.showMessageDialog(null, "Data Deleted Succefully");
+
+                    SetProductNull();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
+        }
+    }//GEN-LAST:event_ProDeletActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1056,7 +1374,7 @@ public class Admin extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel AddProduct;
+    private javax.swing.JLabel AddProduct1;
     private javax.swing.JButton AdminBrowsepic;
     private javax.swing.JLabel AdminLogout;
     private javax.swing.JLabel AdminPass;
@@ -1096,12 +1414,12 @@ public class Admin extends javax.swing.JFrame {
     private javax.swing.JLabel EmployeeUsernamelabale;
     private javax.swing.JLabel Exit;
     private javax.swing.JPanel HadingPanal;
+    private javax.swing.JLabel Id;
     private javax.swing.JPanel MainPanal;
     private javax.swing.JTabbedPane MainTabbpane;
     private javax.swing.JLabel PassRepeatlabale;
     private javax.swing.JButton ProDelet;
     private javax.swing.JButton ProSave;
-    private javax.swing.JButton ProUpdate;
     private javax.swing.JPanel Product;
     private javax.swing.JLabel ProductCatagoryLabale;
     private javax.swing.JTextArea ProductDiscription;
@@ -1114,6 +1432,7 @@ public class Admin extends javax.swing.JFrame {
     private javax.swing.JCheckBox ShowPass;
     private javax.swing.JButton UdateAdminPro;
     private javax.swing.JComboBox<String> UnitOption;
+    private javax.swing.JButton Update;
     private javax.swing.JTextField UserNamText;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1125,6 +1444,7 @@ public class Admin extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel min;
     private javax.swing.JLabel picSpace;
+    private javax.swing.JLabel proId;
     private javax.swing.JPanel profile;
     // End of variables declaration//GEN-END:variables
 }

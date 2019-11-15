@@ -5,8 +5,15 @@
  */
 package Quitation;
 
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.PreparedStatement;
 import java.awt.Image;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -23,6 +30,7 @@ public class CreateProfile extends javax.swing.JFrame {
      * Creates new form CreateProfile
      */
     String Imagepath = null;
+
     public CreateProfile() {
         initComponents();
     }
@@ -311,12 +319,12 @@ public class CreateProfile extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void ExitMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseEntered
-        Exit.setForeground(new java.awt.Color(128,0,0));
-        
+        Exit.setForeground(new java.awt.Color(128, 0, 0));
+
     }//GEN-LAST:event_ExitMouseEntered
 
     private void ExitMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseExited
-        Exit.setForeground(new java.awt.Color(255,255,255));
+        Exit.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_ExitMouseExited
 
     private void ExitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ExitMouseClicked
@@ -324,15 +332,15 @@ public class CreateProfile extends javax.swing.JFrame {
     }//GEN-LAST:event_ExitMouseClicked
 
     private void minMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseEntered
-         min.setForeground(new java.awt.Color(128,128,128));
+        min.setForeground(new java.awt.Color(128, 128, 128));
     }//GEN-LAST:event_minMouseEntered
 
     private void minMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseExited
-       min.setForeground(new java.awt.Color(255,255,255));
+        min.setForeground(new java.awt.Color(255, 255, 255));
     }//GEN-LAST:event_minMouseExited
 
     private void minMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minMouseClicked
-         this.setState(JFrame.ICONIFIED);
+        this.setState(JFrame.ICONIFIED);
     }//GEN-LAST:event_minMouseClicked
 
     private void CnamTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CnamTextActionPerformed
@@ -356,7 +364,6 @@ public class CreateProfile extends javax.swing.JFrame {
     }//GEN-LAST:event_Userpass1ActionPerformed
 
     //Chack data validity
-    
     private boolean varifydata() {
         if (CnamText.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Empty company name field");
@@ -382,23 +389,45 @@ public class CreateProfile extends javax.swing.JFrame {
         }
     }
     private void SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveActionPerformed
-        if(varifydata()){
-            Login login = new Login();
-            login.setVisible(true);
-            this.dispose();
-            
+        Connection con = DBConnection.getConnection();
+        PreparedStatement ps;
+
+        if (varifydata()) {
+            try {
+                ps = (PreparedStatement) con.prepareStatement("UPDATE `admin` SET"
+                        + "`CompanyName`=?,"
+                        + "`CompanyAddress`=?,"
+                        + "`UserName`=?,"
+                        + "`Password`=?,"
+                        + "`Logo`=? WHERE 1");
+                ps.setString(1, CnamText.getText());
+                ps.setString(2, CaddText.getText());
+                ps.setString(3, UserNamText.getText());
+                ps.setString(4, String.valueOf(UserPass2.getPassword()));
+                InputStream img = new FileInputStream(new File(Imagepath));
+                ps.setBlob(5, img);
+                if (ps.executeUpdate() != 0) {
+                    JOptionPane.showMessageDialog(null, "done update");
+                    
+
+                } else {
+                    JOptionPane.showMessageDialog(null, "Something wrong");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(ex.getMessage());
+            }
+
         }
     }//GEN-LAST:event_SaveActionPerformed
-    
+
     // Size Image
-    
     private ImageIcon resizepic(String picpath) {
         ImageIcon myimg = new ImageIcon(picpath);
         Image img = myimg.getImage().getScaledInstance(picSpace.getWidth() - 3, picSpace.getHeight() - 3, Image.SCALE_SMOOTH);
         ImageIcon mypic = new ImageIcon(img);
         return mypic;
     }
-    
+
     private void BrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrowseActionPerformed
         JFileChooser filec = new JFileChooser();
         filec.setCurrentDirectory(new File(System.getProperty("user.home")));
